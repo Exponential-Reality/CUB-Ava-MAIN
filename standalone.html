@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Caribbean Union Bank AI Assistant (Standalone)</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&family=Sora:wght@600;700;800&display=swap" rel="stylesheet">
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js" crossorigin></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: #0c1017;
+      color: #ffffff;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2, h3, .font-sora {
+      font-family: 'Sora', sans-serif;
+    }
+    .custom-scrollbar::-webkit-scrollbar {
+      width: 6px;
+    }
+    .custom-scrollbar::-webkit-scrollbar-track {
+      background: rgba(255, 255, 255, 0.03);
+    }
+    .custom-scrollbar::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: 9999px;
+    }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState, useEffect, useRef } = React;
+
+    // CUB Knowledge Base for standalone offline execution
+    const getCubReply = (query) => {
+      const q = query.toLowerCase().trim();
+
+      if (/^(hi|hello|hey|good morning|good afternoon|greetings|howdy)[\s!.]*$/i.test(q)) {
+        return "Hello! Welcome to Caribbean Union Bank. I'm CUB AI, your virtual banking representative. How can I help you today? Feel free to ask about our high-yield savings accounts, home mortgages, credit cards, or branch locations!";
+      }
+
+      if (q.includes("document") || q.includes("requirement") || q.includes("open account") || q.includes("opening account") || q.includes("tin") || q.includes("id")) {
+        return "To open a Personal Account at Caribbean Union Bank, you will need:\n\n1. Two (2) valid government photo IDs (Passport, Driver's License, or Electoral Card)\n2. Proof of Address (Utility bill under 3 months old or Job Letter)\n3. Proof of Income (Job Letter or last 3 pay slips)\n4. Tax Identification Number (TIN)\n\nFor Junior Savers Accounts: Child's original Birth Certificate + Parent/Guardian photo ID, proof of address & TIN.";
+      }
+
+      if (q.includes("rate") || q.includes("interest") || q.includes("priority") || q.includes("prestige") || q.includes("dollar a day") || q.includes("premium saver") || q.includes("prime") || q.includes("calculate") || q.includes("percent") || q.includes("%")) {
+        return "Here are Caribbean Union Bank's current interest rates and prime lending benchmarks:\n\n• Priority Savings: 2.00% APY ($100 min opening amount)\n• Prestige Savings: Minimum 2.50% APY ($1,000 min opening amount)\n• Dollar A Day Savings: Minimum 2.25% APY ($100 min opening amount)\n• Premium Savers: Minimum 2.75% APY ($5,000 min opening amount)\n• Prime Lending Rate: Benchmark 10.00%, adjusted based on individual credit history.\n\n💡 Try our built-in Interest & Loan Calculator in the app!";
+      }
+
+      if (q.includes("branch") || q.includes("location") || q.includes("address") || q.includes("hours") || q.includes("open") || q.includes("close") || q.includes("where")) {
+        return "Caribbean Union Bank Branch Locations & Hours:\n\n• Headquarters (Friars Hill Road):\n  - Friars Hill Road, St. John's (Tel: 268-481-8278 | customer.service@cub.ag)\n  - Hours: Mon–Thu 8:00am–2:00pm | Fri 8:00am–3:00pm\n\n• Factory Road Branch:\n  - Starling Business Complex, Factory Road (Tel: 268-481-8285)\n  - Hours: Mon–Thu 8:00am–2:00pm | Fri 8:00am–3:00pm\n\n• Jolly Harbour Branch:\n  - Valley Road, Jolly Harbour Marina (Tel: 268-481-8265)\n  - Hours: Mon–Fri 9:00am–1:00pm\n\nWebsite: https://caribbeanunionbank.com";
+      }
+
+      if (q.includes("loan") || q.includes("mortgage") || q.includes("borrow") || q.includes("vehicle") || q.includes("car")) {
+        return "Caribbean Union Bank Financing Solutions & Rates:\n\n• Prime Lending Benchmark: 10.00% (adjusted by credit evaluations)\n• Mortgages: Residential home purchases, construction & land refinancing (up to 30 years)\n• Vehicle Loans: New & pre-owned automobiles\n• Land Loans: Residential or commercial plot acquisition\n• Personal / Consumer Loans: Travel, education, medical & debt consolidation\n\nContact Credit Services at (268) 481-8285 or email creditservices@cub.ag.";
+      }
+
+      if (q.includes("stolen") || q.includes("lost") || q.includes("compromised")) {
+        return "If you suspect your card or account has been compromised, or if your card is lost or stolen:\n\n1. Call CUB Card Services immediately at (268) 481-8250 or email cardservices@cub.ag\n2. Lock or freeze your card instantly via CUB Internet Banking or Mobile App under Card Settings.";
+      }
+
+      if (q.includes("travel") || q.includes("notify")) {
+        return "Notifying us before you travel ensures your CUB Visa Debit or Credit card remains active and isn't flagged by security filters during international transactions. Submit a quick travel notification via CUB Internet Banking or call Card Services at (268) 481-8250.";
+      }
+
+      return "Hello! I'm CUB AI, your digital assistant for Caribbean Union Bank. I can help you with account document requirements, savings interest rates, loan applications, credit cards, or branch hours. How may I assist you today?";
+    };
+
+    function App() {
+      const [messages, setMessages] = useState([
+        {
+          id: '1',
+          role: 'assistant',
+          content: "Welcome to Caribbean Union Bank AI! I'm your virtual banking guide for account document requirements, interest rates, mortgages, credit cards, and branch services. How can I help you today?",
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }
+      ]);
+      const [input, setInput] = useState('');
+      const [calcOpen, setCalcOpen] = useState(false);
+      const [amount, setAmount] = useState(10000);
+      const [rate, setRate] = useState(2.5);
+      const [months, setMonths] = useState(12);
+      const chatEndRef = useRef(null);
+
+      useEffect(() => {
+        chatEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+      }, [messages]);
+
+      const handleSend = (e) => {
+        e?.preventDefault();
+        if (!input.trim()) return;
+
+        const userText = input;
+        const userMsg = {
+          id: Date.now().toString(),
+          role: 'user',
+          content: userText,
+          time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+
+        setMessages(prev => [...prev, userMsg]);
+        setInput('');
+
+        setTimeout(() => {
+          const reply = getCubReply(userText);
+          const aiMsg = {
+            id: (Date.now() + 1).toString(),
+            role: 'assistant',
+            content: reply,
+            time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          };
+          setMessages(prev => [...prev, aiMsg]);
+        }, 300);
+      };
+
+      const monthlyInterest = (amount * (rate / 100)) / 12;
+      const totalEarned = (amount * (rate / 100) * (months / 12));
+
+      return (
+        <div className="flex h-screen bg-[#0c1017] text-white overflow-hidden">
+          {/* Sidebar */}
+          <div className="w-80 bg-[#121824] border-r border-slate-800 flex flex-col p-5 hidden md:flex">
+            <div className="flex items-center gap-3 pb-6 border-b border-slate-800">
+              <div className="w-10 h-10 rounded-xl bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-amber-400 font-bold font-sora text-lg">
+                CUB
+              </div>
+              <div>
+                <h1 className="font-bold font-sora text-slate-100">Caribbean Union Bank</h1>
+                <p className="text-xs text-amber-400 font-medium">AI Virtual Banking Assistant</p>
+              </div>
+            </div>
+
+            <div className="mt-6 space-y-3">
+              <button 
+                onClick={() => setCalcOpen(true)}
+                className="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl shadow-lg transition flex items-center justify-center gap-2 text-sm"
+              >
+                🧮 Open CUB Interest Calculator
+              </button>
+            </div>
+
+            <div className="mt-8">
+              <p className="text-xs font-semibold text-slate-400 uppercase tracking-wider mb-3">Suggested Topics</p>
+              <div className="space-y-2">
+                {[
+                  "What documents do I need to open an account?",
+                  "What are your current savings interest rates?",
+                  "Where are your branch locations and opening hours?",
+                  "How do I apply for a home mortgage or vehicle loan?",
+                  "Who do I contact if my card is lost or stolen?"
+                ].map((prompt, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => { setInput(prompt); }}
+                    className="w-full text-left p-3 rounded-lg bg-slate-800/40 hover:bg-slate-800 text-xs text-slate-300 border border-slate-700/50 transition"
+                  >
+                    {prompt}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="mt-auto pt-6 border-t border-slate-800 text-xs text-slate-500 text-center">
+              Caribbean Union Bank • Antigua & Barbuda<br/>
+              Friars Hill Road • Tel: (268) 481-8278
+            </div>
+          </div>
+
+          {/* Main Chat Area */}
+          <div className="flex-1 flex flex-col h-full bg-[#0c1017] relative">
+            {/* Header */}
+            <header className="h-16 border-b border-slate-800 bg-[#121824]/80 backdrop-blur px-6 flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-3 h-3 rounded-full bg-emerald-500 animate-pulse"></div>
+                <span className="font-sora font-semibold text-sm text-slate-200">CUB Customer Support Bot (Offline Portable Edition)</span>
+              </div>
+              <button 
+                onClick={() => setCalcOpen(true)}
+                className="md:hidden text-xs bg-amber-500/20 text-amber-300 px-3 py-1.5 rounded-lg border border-amber-500/30"
+              >
+                Calculator
+              </button>
+            </header>
+
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-6 space-y-4 custom-scrollbar">
+              {messages.map((m) => (
+                <div
+                  key={m.id}
+                  className={`flex ${m.role === 'user' ? 'justify-end' : 'justify-start'}`}
+                >
+                  <div
+                    className={`max-w-2xl rounded-2xl p-4 text-sm leading-relaxed whitespace-pre-wrap ${
+                      m.role === 'user'
+                        ? 'bg-amber-500 text-slate-950 font-medium rounded-br-none shadow-md'
+                        : 'bg-[#182030] text-slate-100 border border-slate-800 rounded-bl-none shadow-sm'
+                    }`}
+                  >
+                    <div>{m.content}</div>
+                    <div className={`text-[10px] mt-2 text-right ${m.role === 'user' ? 'text-slate-800' : 'text-slate-500'}`}>
+                      {m.time}
+                    </div>
+                  </div>
+                </div>
+              ))}
+              <div ref={chatEndRef} />
+            </div>
+
+            {/* Input Form */}
+            <div className="p-4 border-t border-slate-800 bg-[#121824]">
+              <form onSubmit={handleSend} className="max-w-4xl mx-auto flex gap-3">
+                <input
+                  type="text"
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Ask about account documents, interest rates, loans, branch hours..."
+                  className="flex-1 bg-[#182030] border border-slate-700/80 rounded-xl px-4 py-3 text-sm text-white focus:outline-none focus:border-amber-500 placeholder-slate-500"
+                />
+                <button
+                  type="submit"
+                  className="bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold px-6 py-3 rounded-xl transition shadow-lg text-sm"
+                >
+                  Send
+                </button>
+              </form>
+            </div>
+          </div>
+
+          {/* Calculator Modal */}
+          {calcOpen && (
+            <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+              <div className="bg-[#121824] border border-slate-800 rounded-2xl p-6 max-w-md w-full shadow-2xl relative">
+                <button 
+                  onClick={() => setCalcOpen(false)}
+                  className="absolute top-4 right-4 text-slate-400 hover:text-white text-lg font-bold"
+                >
+                  ✕
+                </button>
+                <h3 className="text-xl font-bold font-sora text-amber-400 mb-1">CUB Interest Calculator</h3>
+                <p className="text-xs text-slate-400 mb-6">Estimate your earnings or interest projections easily.</p>
+
+                <div className="space-y-4">
+                  <div>
+                    <label className="text-xs text-slate-300 block mb-1">Deposit Amount ($):</label>
+                    <input 
+                      type="number" 
+                      value={amount} 
+                      onChange={(e) => setAmount(Number(e.target.value))}
+                      className="w-full bg-[#182030] border border-slate-700 rounded-lg p-2.5 text-sm text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-slate-300 block mb-1">Annual Interest Rate (%):</label>
+                    <input 
+                      type="number" 
+                      step="0.1"
+                      value={rate} 
+                      onChange={(e) => setRate(Number(e.target.value))}
+                      className="w-full bg-[#182030] border border-slate-700 rounded-lg p-2.5 text-sm text-white"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="text-xs text-slate-300 block mb-1">Term Duration (Months):</label>
+                    <select 
+                      value={months} 
+                      onChange={(e) => setMonths(Number(e.target.value))}
+                      className="w-full bg-[#182030] border border-slate-700 rounded-lg p-2.5 text-sm text-white"
+                    >
+                      <option value={6}>6 Months</option>
+                      <option value={12}>12 Months (1 Year)</option>
+                      <option value={24}>24 Months (2 Years)</option>
+                      <option value={36}>36 Months (3 Years)</option>
+                    </select>
+                  </div>
+
+                  <div className="bg-slate-900/80 p-4 rounded-xl border border-slate-800 space-y-2 mt-4">
+                    <div className="flex justify-between text-xs text-slate-300">
+                      <span>Monthly Interest:</span>
+                      <span className="font-bold text-amber-400">${monthlyInterest.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-slate-300">
+                      <span>Total Estimated Interest:</span>
+                      <span className="font-bold text-emerald-400">${totalEarned.toFixed(2)}</span>
+                    </div>
+                    <div className="flex justify-between text-xs text-slate-300 pt-2 border-t border-slate-800">
+                      <span>Final Total Balance:</span>
+                      <span className="font-bold text-white text-sm">${(amount + totalEarned).toFixed(2)}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>

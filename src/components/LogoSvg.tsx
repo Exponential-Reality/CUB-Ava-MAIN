@@ -1,0 +1,19 @@
+import React from "react";
+
+export const LogoSvg: React.FC<{ className?: string }> = ({ className = "w-full h-full" }) => {
+  return (
+    <svg viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg" className={className}>
+      <circle cx="50" cy="50" r="48" fill="var(--t-primary)" />
+      <path
+        d="M50 20 C60 30 75 32 82 30 C78 40 65 45 55 44 C63 48 72 55 75 63
+           C63 60 52 55 47 48 C50 57 52 68 48 78 C42 68 40 55 42 46
+           C36 52 25 55 18 52 C26 46 36 40 44 40 C34 36 24 30 22 22
+           C32 24 44 28 50 36 Z"
+        fill="white"
+        opacity="0.95"
+      />
+    </svg>
+  );
+};
+
+
