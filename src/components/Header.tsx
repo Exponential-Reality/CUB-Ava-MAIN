@@ -36,7 +36,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       {/* Right Controls: Official Verified Badge */}
       <div className="flex items-center gap-2">
-        <div className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-white/5 border border-[var(--line)] text-xs text-[var(--text-soft)] shadow-sm">
+        <div className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/5 border border-[var(--line)] text-xs text-[var(--text-soft)] shadow-sm">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />
           <span className="font-semibold text-white">Official CUB Assistant</span>
         </div>
@@ -44,3 +44,5 @@ export const Header: React.FC<HeaderProps> = ({
     </div>
   );
 };
+
+
