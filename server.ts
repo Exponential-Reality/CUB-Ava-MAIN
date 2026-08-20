@@ -818,7 +818,11 @@ async function startServer() {
 
       // Check if user memory / past chats context was provided
       const pastChatsSummary = req.body.pastChatsSummary || req.body.userContext;
+      const selectedLanguage = req.body.language || "en";
       let effectiveSystemPrompt = SYSTEM_PROMPT;
+      if (selectedLanguage && selectedLanguage !== "en") {
+        effectiveSystemPrompt += `\n\n### CRITICAL LANGUAGE INSTRUCTION:\nThe user's selected language code is "${selectedLanguage}". You MUST respond entirely in this language fluently, warmly, and accurately while maintaining your role as CUB Ava, Caribbean Union Bank's virtual assistant.`;
+      }
       if (pastChatsSummary) {
         effectiveSystemPrompt += `\n\n### USER PREVIOUS CHATS & RECAP CONTEXT:\nThe returning customer has interacted with CUB AI in previous sessions. Here is a summary of their past conversation sessions and topics:\n${pastChatsSummary}\n\nIMPORTANT: If the user asks for a recap, asks what they inquired about previously, or references earlier discussions, use this context to provide an accurate, friendly summary of their previous questions!`;
       }

@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { QUICK_PILLS } from "../data/bankData";
 import { Send, Volume2, VolumeX, Mic, MicOff, Calculator, Clock, FileText, Landmark, Sparkles } from "lucide-react";
 import { speakText, stopSpeech, isSpeaking as checkIsSpeaking } from "../utils/speech";
+import { getTranslation } from "../utils/i18n";
 
 interface ChatInputProps {
   onSendMessage: (text: string) => void;
@@ -9,6 +10,7 @@ interface ChatInputProps {
   lastAssistantMessage?: string;
   draftInputPrompt?: string;
   onClearDraftPrompt?: () => void;
+  language?: string;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -17,6 +19,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   lastAssistantMessage,
   draftInputPrompt,
   onClearDraftPrompt,
+  language = "en",
 }) => {
   const [input, setInput] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -24,6 +27,8 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   const [voiceError, setVoiceError] = useState<string | null>(null);
   const recognitionRef = useRef<any>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  const t = getTranslation(language);
 
   useEffect(() => {
     if (draftInputPrompt) {
@@ -173,7 +178,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           placeholder={
             isListening
               ? "Listening... speak now..."
-              : voiceError || "Ask CUB AI about interest rates, loans, credit cards..."
+              : voiceError || t.inputPlaceholder
           }
           disabled={isLoading}
           className="flex-1 bg-transparent border-none text-white font-medium text-sm focus:outline-none placeholder:text-gray-400 caret-[var(--t-primary)] py-1.5"

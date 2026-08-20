@@ -3,6 +3,7 @@ import { ThemeName, BranchLocation, ChatSession, BackgroundAnimMode } from "../t
 import { THEMES, LOCATIONS, NAV_ITEMS } from "../data/bankData";
 import { LogoSvg } from "./LogoSvg";
 import { LANGUAGES_LIST, LanguageOption } from "./LanguageSelectorBar";
+import { getTranslation } from "../utils/i18n";
 import { Lock, MapPin, PhoneCall, Headphones, X, PlusCircle, Calculator, Home, CreditCard, ArrowRightLeft, TrendingUp, ShieldCheck, HelpCircle, Landmark, MessageSquare, Trash2, History, Sparkles, Monitor, ChevronDown, Layers, Database, Globe2, Search, Check } from "lucide-react";
 
 interface SidebarProps {
@@ -20,6 +21,8 @@ interface SidebarProps {
   activeSessionId?: string;
   onSelectSession?: (id: string) => void;
   onDeleteSession?: (id: string) => void;
+  language?: string;
+  onSelectLanguage?: (code: string) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -37,17 +40,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
   activeSessionId,
   onSelectSession,
   onDeleteSession,
+  language = "en",
+  onSelectLanguage,
 }) => {
   const [showBranches, setShowBranches] = useState(false);
   const [showAnimDropdown, setShowAnimDropdown] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
-  const [selectedLangCode, setSelectedLangCode] = useState<string>("en");
   const [langSearchQuery, setLangSearchQuery] = useState<string>("");
   const [selectedBranchKey, setSelectedBranchKey] = useState<string>(
     "Headquarters — Friars Hill Road"
   );
 
-  const currentLang = LANGUAGES_LIST.find((l) => l.code === selectedLangCode) || LANGUAGES_LIST[0];
+  const t = getTranslation(language);
+  const currentLang = LANGUAGES_LIST.find((l) => l.code === language) || LANGUAGES_LIST[0];
   const filteredLanguages = LANGUAGES_LIST.filter(
     (l) =>
       l.name.toLowerCase().includes(langSearchQuery.toLowerCase()) ||
@@ -161,7 +166,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           className="w-full mb-3.5 group relative flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-[var(--t-primary)] to-[var(--t-secondary)] text-[#0a0806] font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-[var(--t-glow)] hover:shadow-xl hover:brightness-110 active:scale-[0.98] transition-all duration-200 cursor-pointer border border-white/20"
         >
           <PlusCircle className="w-4 h-4 text-[#0a0806] group-hover:rotate-90 transition-transform duration-300 shrink-0" />
-          <span className="font-['Sora'] font-bold text-[13px]">New Conversation</span>
+          <span className="font-['Sora'] font-bold text-[13px]">{t.newConversation}</span>
           <Sparkles className="w-3.5 h-3.5 text-[#0a0806]/70 group-hover:scale-125 transition-transform shrink-0 ml-auto" />
         </button>
 
@@ -359,14 +364,15 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </div>
               <div className="max-h-52 overflow-y-auto custom-scrollbar space-y-1 pr-1">
                 {filteredLanguages.map((lang) => {
-                  const isSelected = selectedLangCode === lang.code;
+                  const isSelected = language === lang.code;
                   return (
                     <button
                       key={lang.code}
                       onClick={() => {
-                        setSelectedLangCode(lang.code);
+                        if (onSelectLanguage) {
+                          onSelectLanguage(lang.code);
+                        }
                         setShowLangDropdown(false);
-                        onSelectNavPrompt(lang.samplePrompt);
                         onCloseMobile();
                       }}
                       className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${

@@ -9,25 +9,27 @@ import { InterestCalculator } from "./components/InterestCalculator";
 import { BackgroundAnimation } from "./components/BackgroundAnimation";
 import { SqliteInspectorModal } from "./components/SqliteInspectorModal";
 import { stopSpeech } from "./utils/speech";
+import { getTranslation } from "./utils/i18n";
 
 const STORAGE_KEY_SESSIONS = "cub_chat_sessions_v2";
 const STORAGE_KEY_ACTIVE_ID = "cub_active_session_id_v2";
 const STORAGE_KEY_THEME = "cub_theme_v2";
 const STORAGE_KEY_ANIM_MODE = "cub_anim_mode_v2";
+const STORAGE_KEY_LANG = "cub_language_v2";
 
-const createDefaultSession = (): ChatSession => {
+const createDefaultSession = (lang = "en"): ChatSession => {
+  const t = getTranslation(lang);
   const id = "session-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6);
   return {
     id,
-    title: "New Conversation",
+    title: t.newConversation,
     createdAt: Date.now(),
     updatedAt: Date.now(),
     messages: [
       {
         id: "msg-welcome-" + Date.now(),
         role: "assistant",
-        content:
-          "Hello! What do you need help with today? Whether you're checking interest rates, looking into loan options, or need branch hours, I'm right here to walk you through it!",
+        content: t.welcomeMessage,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       },
     ],
@@ -101,6 +103,15 @@ export const App: React.FC = () => {
     return "aurora";
   });
 
+  // Persisted Language State
+  const [language, setLanguage] = useState<string>(() => {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY_LANG);
+      if (saved) return saved;
+    } catch (e) {}
+    return "en";
+  });
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOpenMobile, setIsOpenMobile] = useState<boolean>(false);
   const [isCalcOpen, setIsCalcOpen] = useState<boolean>(false);
@@ -125,7 +136,7 @@ export const App: React.FC = () => {
     } catch (e) {
       console.error("Failed to load chat sessions from localStorage:", e);
     }
-    return [createDefaultSession()];
+    return [createDefaultSession(language)];
   });
 
   const [activeSessionId, setActiveSessionId] = useState<string>(() => {
@@ -150,6 +161,35 @@ export const App: React.FC = () => {
     } catch (e) {}
   }, [animMode]);
 
+  // Save Language to localStorage
+  useEffect(() => {
+    try {
+      localStorage.setItem(STORAGE_KEY_LANG, language);
+    } catch (e) {}
+  }, [language]);
+
+  const handleSelectLanguage = (newLang: string) => {
+    setLanguage(newLang);
+    const t = getTranslation(newLang);
+    setSessions((prev) =>
+      prev.map((s) => {
+        if (s.id === activeSessionId && s.messages.length === 1 && s.messages[0].role === "assistant") {
+          return {
+            ...s,
+            title: t.newConversation,
+            messages: [
+              {
+                ...s.messages[0],
+                content: t.welcomeMessage,
+              },
+            ],
+          };
+        }
+        return s;
+      })
+    );
+  };
+
   // Save sessions to localStorage
   useEffect(() => {
     try {
@@ -172,7 +212,7 @@ export const App: React.FC = () => {
 
   const handleNewChat = () => {
     stopSpeech();
-    const newSess = createDefaultSession();
+    const newSess = createDefaultSession(language);
     setSessions((prev) => [newSess, ...prev]);
     setActiveSessionId(newSess.id);
   };
@@ -187,7 +227,7 @@ export const App: React.FC = () => {
     setSessions((prev) => {
       const remaining = prev.filter((s) => s.id !== sessionId);
       if (remaining.length === 0) {
-        const fresh = createDefaultSession();
+        const fresh = createDefaultSession(language);
         setActiveSessionId(fresh.id);
         return [fresh];
       }
@@ -282,6 +322,7 @@ export const App: React.FC = () => {
         body: JSON.stringify({
           messages: updatedMessages.map((m) => ({ role: m.role, content: m.content })),
           pastChatsSummary: pastChatsSummary,
+          language: language,
         }),
       });
 
@@ -367,6 +408,8 @@ export const App: React.FC = () => {
         activeSessionId={activeSessionId}
         onSelectSession={handleSelectSession}
         onDeleteSession={handleDeleteSession}
+        language={language}
+        onSelectLanguage={handleSelectLanguage}
       />
 
       {/* Main Content Area (Default 4K Ultra HD Layout) */}
@@ -375,6 +418,7 @@ export const App: React.FC = () => {
           <Header
             onOpenMobile={() => setIsOpenMobile(true)}
             onOpenSqliteModal={() => setIsSqliteModalOpen(true)}
+            language={language}
           />
 
           <ChatWindow
@@ -394,6 +438,7 @@ export const App: React.FC = () => {
             }
             draftInputPrompt={draftInputPrompt}
             onClearDraftPrompt={() => setDraftInputPrompt("")}
+            language={language}
           />
         </div>
       </main>
