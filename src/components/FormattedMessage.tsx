@@ -12,6 +12,31 @@ interface FormattedMessageProps {
   onAnimated?: () => void;
 }
 
+const preprocessText = (input: string): string => {
+  if (!input) return "";
+  let text = input;
+
+  // Auto-link phone numbers like (268) 481-8278 or 268-481-8278 not already in markdown links
+  text = text.replace(/(?<!\]\()(?:tel:)?(\(?268\)?[\s.-]?\d{3}[\s.-]?\d{4})/g, (match, p1) => {
+    const cleanNum = p1.replace(/\D/g, "");
+    return `[${match}](tel:${cleanNum})`;
+  });
+
+  // Auto-link email addresses not already in markdown links
+  text = text.replace(/(?<!\]\()([a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,})/g, (match) => {
+    return `[${match}](mailto:${match})`;
+  });
+
+  // Auto-link URLs not already in markdown links
+  text = text.replace(/(?<!\]\()(https?:\/\/[^\s)]+|caribbeanunionbank\.com[^\s)]*)/g, (match) => {
+    if (match.startsWith("[")) return match;
+    const url = match.startsWith("http") ? match : `https://${match}`;
+    return `[${match}](${url})`;
+  });
+
+  return text;
+};
+
 export const FormattedMessage: React.FC<FormattedMessageProps> = ({
   text,
   animate = false,
@@ -20,14 +45,16 @@ export const FormattedMessage: React.FC<FormattedMessageProps> = ({
   onOpenCalculator,
   onAnimated,
 }) => {
-  const [displayedLength, setDisplayedLength] = useState(animate ? 0 : text.length);
-  const [isTyping, setIsTyping] = useState(animate && text.length > 0);
+  const processedFull = React.useMemo(() => preprocessText(text || ""), [text]);
+  const [displayedLength, setDisplayedLength] = useState(animate ? 0 : processedFull.length);
+  const [isTyping, setIsTyping] = useState(animate && processedFull.length > 0);
   const timerRef = useRef<any>(null);
 
   useEffect(() => {
     if (!animate) {
-      setDisplayedLength(text.length);
+      setDisplayedLength(processedFull.length);
       setIsTyping(false);
+      onAnimated?.();
       return;
     }
 
@@ -35,11 +62,11 @@ export const FormattedMessage: React.FC<FormattedMessageProps> = ({
     setIsTyping(true);
 
     let currentLen = 0;
-    const totalLen = text.length;
+    const totalLen = processedFull.length;
 
     const step = () => {
       if (currentLen < totalLen) {
-        const increment = Math.min(3, totalLen - currentLen);
+        const increment = Math.min(4, totalLen - currentLen);
         currentLen += increment;
         setDisplayedLength(currentLen);
         if (onScroll) onScroll();
@@ -55,11 +82,11 @@ export const FormattedMessage: React.FC<FormattedMessageProps> = ({
     return () => {
       if (timerRef.current) clearTimeout(timerRef.current);
     };
-  }, [text, animate, speed]);
+  }, [processedFull, animate, speed]);
 
   if (!text) return null;
 
-  const visibleText = text.slice(0, displayedLength);
+  const visibleMarkdown = processedFull.slice(0, displayedLength);
 
   return (
     <div className="formatted-message space-y-2">
@@ -110,9 +137,9 @@ export const FormattedMessage: React.FC<FormattedMessageProps> = ({
                 return (
                   <a
                     href={href}
-                    className="inline-flex items-center gap-1 text-[var(--t-primary)] hover:underline font-semibold"
+                    className="inline-flex items-center gap-1.5 text-[var(--t-primary)] hover:underline font-bold"
                   >
-                    <Phone className="w-3 h-3 inline shrink-0" />
+                    <Phone className="w-3.5 h-3.5 inline shrink-0" />
                     <span>{children}</span>
                   </a>
                 );
@@ -122,9 +149,9 @@ export const FormattedMessage: React.FC<FormattedMessageProps> = ({
                 return (
                   <a
                     href={href}
-                    className="inline-flex items-center gap-1 text-[var(--t-primary)] hover:underline font-semibold"
+                    className="inline-flex items-center gap-1.5 text-[var(--t-primary)] hover:underline font-bold"
                   >
-                    <Mail className="w-3 h-3 inline shrink-0" />
+                    <Mail className="w-3.5 h-3.5 inline shrink-0" />
                     <span>{children}</span>
                   </a>
                 );
@@ -135,11 +162,11 @@ export const FormattedMessage: React.FC<FormattedMessageProps> = ({
                   href={href || "https://caribbeanunionbank.com"}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-[var(--t-primary)] hover:underline font-semibold"
+                  className="inline-flex items-center gap-1.5 text-[var(--t-primary)] hover:underline font-bold"
                 >
-                  <Globe className="w-3 h-3 inline shrink-0" />
+                  <Globe className="w-3.5 h-3.5 inline shrink-0" />
                   <span>{children}</span>
-                  <ExternalLink className="w-2.5 h-2.5 inline opacity-70" />
+                  <ExternalLink className="w-3 h-3 inline opacity-70" />
                 </a>
               );
             },
@@ -171,7 +198,7 @@ export const FormattedMessage: React.FC<FormattedMessageProps> = ({
             },
           }}
         >
-          {visibleText}
+          {visibleMarkdown}
         </Markdown>
         {isTyping && (
           <span className="inline-block w-1.5 h-4 ml-1 bg-[var(--t-primary)] animate-pulse align-middle rounded-sm" />

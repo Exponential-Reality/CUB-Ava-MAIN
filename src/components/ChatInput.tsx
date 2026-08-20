@@ -82,7 +82,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const textToSpeak =
       input.trim() ||
       lastAssistantMessage ||
-      "Welcome to Caribbean Union Bank. How can I assist you with your banking today?";
+      "Hello! What do you need help with today? Whether you're checking interest rates, looking into loan options, or need branch hours, I'm right here to walk you through it!";
 
     speakText(textToSpeak, {
       onStart: () => setIsSpeaking(true),

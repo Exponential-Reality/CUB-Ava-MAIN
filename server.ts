@@ -184,22 +184,22 @@ Established: 2005 in St. John's, Antigua and Barbuda as an indigenous commercial
   - Answer: Immediately call CUB Card Services at (268) 481-8250 or email cardservices@cub.ag to freeze your card, or lock it instantly via CUB Internet Banking / Mobile App.
 • Credit Cards - Why do I need to notify the Bank when I am traveling?
   - Answer: Notifying CUB before traveling prevents automated fraud protection systems from placing security flags or temporary blocks on your card during overseas transactions.
-• Official FAQs Link: https://caribbeanunionbank.com/faqs/
+• Official FAQs: https://caribbeanunionbank.com/faqs/
 `;
 
 const SYSTEM_PROMPT = `
 # CUB AI - SYSTEM INSTRUCTIONS
 
 ## Identity & Tone
-You are CUB AI, the official digital banking representative for Caribbean Union Bank (CUB) in Antigua and Barbuda.
-You speak naturally, warmly, intelligently, and professionally — like an experienced, welcoming human banker at our Friars Hill Road or Factory Road branches.
+You are CUB AI (Ava), the official digital banking representative for Caribbean Union Bank (CUB) in Antigua and Barbuda.
+You speak naturally, warmly, intelligently, and conversationally — like a helpful human banker who starts responses warmly (e.g. "Sure, let's dive into that for you!" or "I'd love to help you sort that out!"). Avoid robotic or overly direct dry language.
 
 ---
 
 ## Conversational Guidelines
+- **Conversational Human Tone**: Match the user's friendly energy with conversational hooks like "Sure, let's take a look at that for you!" or "I've got you covered on that!". Speak naturally with warmth and ease.
 - **Keep it Simple & Understanding**: Speak with genuine warmth, empathy, and clarity. Avoid overly verbose explanations, unnecessary corporate jargon, or excessive bullet points. Get straight to the point while remaining kind and understanding.
-- **Be Direct and Helpful**: Answer the customer's specific question clearly and concisely. Avoid unnecessary filler or forced generic headers.
-- **Natural Caribbean Hospitality**: Speak with warm, courteous professionalism ("Hello!", "I would be happy to help you with that.").
+- **Natural Caribbean Hospitality**: Speak with warm, courteous professionalism ("Hello!", "Let's walk through it together.").
 - **Multilingual & Caribbean Creole**:
   - If a user speaks to you in Antiguan Creole or Caribbean dialect (e.g., "Wa gwan", "Wah documents me need fi open one account?"), understand it perfectly and respond warmly, naturally, and helpfully with Caribbean friendliness.
   - If a user speaks in another language (Spanish, French, Haitian Creole, German, Mandarin, etc.), respond fluently, politely, and accurately in that same language.
@@ -350,10 +350,10 @@ You can assist with:
 
 # KNOWLEDGE SOURCE RULE
 Your verified CUB knowledge base is:
-${BANK_FACTS}
+\${BANK_FACTS}
 
 If the answer is not available in your knowledge sources, say warmly:
-"I don't have the exact details on that in my current records, but our friendly Customer Service team at Caribbean Union Bank will be glad to assist you! You can reach them at (268) 481-8278 or customer.service@cub.ag."
+"Sure, let me check on that for you! While I don't have the exact details on that in my current records, our friendly Customer Service team at Caribbean Union Bank will be glad to assist you at (268) 481-8278 or customer.service@cub.ag."
 
 Never invent information.
 
@@ -373,20 +373,23 @@ You must not answer questions about:
 - Investment recommendations
 - Tax advice
 
-If asked about non-banking topics, respond warmly but firmly with:
-"I'd love to chat, but I am specialized specifically as your Caribbean Union Bank virtual banking assistant! I'm here to help you with any questions about CUB accounts, interest rates, loans, credit cards, or branch services. What banking topic can I help you with today?"
+If asked about non-banking topics or random off-topic words (such as "Banana", weather, sports, cooking, etc.), you MUST playfully or politely acknowledge what the user said, explain why it's off-topic for a banking assistant, and pivot directly back to what you can help with (CUB accounts, interest rates, loans, credit cards, or branch hours).
+
+Example:
+Customer: "Banana"
+Response: "As delicious and fun as a banana is, it's a bit outside my wheelhouse as your Caribbean Union Bank virtual banking assistant! I'm here specifically to help you with CUB accounts, savings interest rates, loans, credit cards, branch hours, and digital banking services. What banking topic can I help you sort out today?"
 
 ---
 
 # RESPONSE STYLE & FORMAT
-1. Be warm, natural, human, and conversational while being clear and professional.
+1. Be warm, natural, human, conversational, and welcoming (e.g. "Sure, let's dive into that for you!").
 2. Use bullet points and bold formatting for easy scanning (e.g., list of requirements or interest rate tiers).
 3. Answer directly, provide helpful details, and offer logical next steps or contact info.
 
 Example:
 Customer: "What documents do I need to open a personal account?"
 Response:
-"I'd be glad to help you get ready to open your personal account with us! Here is what you'll need to bring into any Caribbean Union Bank branch:
+"Sure, let's dive into that for you! I'd be glad to help you get ready to open your personal account. Here is what you'll need to bring into any Caribbean Union Bank branch:
 
 • **Two valid photo IDs**: Government-issued Passport, Driver's License, or Electoral Card.
 • **Proof of Address**: Utility bill less than 3 months old, job letter, or tax statement.
@@ -845,7 +848,7 @@ async function startServer() {
 
         // 1. Casual Greetings
         if (/^(hi|hello|hey|good morning|good afternoon|good evening|greetings|howdy|hi there|hello there|sup)[\s!.]*$/i.test(qLower) || qLower === "hi" || qLower === "hello" || qLower === "hey") {
-          return "Hello! Welcome to Caribbean Union Bank. I'm CUB AI, your virtual banking representative. How can I help you today? Feel free to ask about our high-yield savings accounts, home mortgages, credit cards, or branch locations!";
+          return "Hello! What do you need help with today? Whether you're checking interest rates, looking into loan options, or need branch hours, I'm right here to walk you through it!";
         }
 
         // 2. Document & Account Opening Requirements (Checked BEFORE general branch hours)
@@ -862,42 +865,42 @@ async function startServer() {
           qLower.includes("tin") ||
           qLower.includes("valid id")
         ) {
-          return "To open a Personal Account at Caribbean Union Bank, you'll just need to bring:\n\n1. Two (2) valid government photo IDs (Passport, Driver's License, or Electoral Card)\n2. Proof of Address (Utility bill under 3 months old or Job Letter)\n3. Proof of Income (Job Letter or last 3 pay slips)\n4. Tax Identification Number (TIN)\n\nFor Junior Savers Accounts: Child's original Birth Certificate + Parent/Guardian photo ID, proof of address & TIN.\n\nOur branches are open Monday–Thursday 8:00am–2:00pm and Friday 8:00am–3:00pm. Let me know if you need help choosing an account type!";
+          return "Sure, let's dive into that for you! To open a Personal Account at Caribbean Union Bank, you'll just need to bring:\n\n1. Two (2) valid government photo IDs (Passport, Driver's License, or Electoral Card)\n2. Proof of Address (Utility bill under 3 months old or Job Letter)\n3. Proof of Income (Job Letter or last 3 pay slips)\n4. Tax Identification Number (TIN)\n\nFor Junior Savers Accounts: Child's original Birth Certificate + Parent/Guardian photo ID, proof of address & TIN.\n\nOur branches are open Monday–Thursday 8:00am–2:00pm and Friday 8:00am–3:00pm. Let me know if you need help choosing an account type!";
         }
 
         // 3. Stolen / Lost / Compromised Cards
         if (qLower.includes("compromised") || qLower.includes("stolen") || qLower.includes("lost card") || qLower.includes("lost my card") || qLower.includes("suspect fraud")) {
-          return "If you suspect your card or account has been compromised, or if your card is lost or stolen:\n\n1. Call CUB Card Services immediately at (268) 481-8250 or email cardservices@cub.ag\n2. Lock or freeze your card instantly via CUB Internet Banking or Mobile App under Card Settings.";
+          return "I've got you covered on that! If you suspect your card or account has been compromised, or if your card is lost or stolen:\n\n1. Call CUB Card Services immediately at (268) 481-8250 or email cardservices@cub.ag\n2. Lock or freeze your card instantly via CUB Internet Banking or Mobile App under Card Settings.";
         }
 
         // 4. Travel Notifications
         if (qLower.includes("travel") || qLower.includes("notify") || qLower.includes("going abroad") || qLower.includes("overseas")) {
-          return "Notifying us before you travel ensures your CUB Visa Debit or Credit card remains active and isn't flagged by security filters during international transactions. Submit a quick travel notification via CUB Internet Banking or call Card Services at (268) 481-8250.";
+          return "Sure, let's take a look at that! Notifying us before you travel ensures your CUB Visa Debit or Credit card remains active and isn't flagged by security filters during international transactions. Submit a quick travel notification via CUB Internet Banking or call Card Services at (268) 481-8250.";
         }
 
         // 5. Account vs Loan Eligibility
         if (qLower.includes("account") && (qLower.includes("loan") || qLower.includes("apply") || qLower.includes("get a loan"))) {
-          return "If you don't have an account with us yet, you can still apply for a loan! Once your application is approved, we'll set up a CUB account for your loan servicing.\n\nOur Credit Services team will be happy to guide you — reach out to them at (268) 481-8285 or creditservices@cub.ag.";
+          return "I'd love to help you sort that out! If you don't have an account with us yet, you can still apply for a loan. Once your application is approved, we'll set up a CUB account for your loan servicing.\n\nOur Credit Services team will be happy to guide you — reach out to them at (268) 481-8285 or creditservices@cub.ag.";
         }
 
         // 6. Down Payment / Deposit for loans
         if ((qLower.includes("deposit") || qLower.includes("equity") || qLower.includes("down payment")) && (qLower.includes("loan") || qLower.includes("mortgage") || qLower.includes("required"))) {
-          return "Equity or down payment requirements depend on the specific loan type (such as mortgages or vehicle loans) and your credit profile. Please contact CUB Credit Services at (268) 481-8285 or creditservices@cub.ag for exact deposit guidelines tailored to your scenario.";
+          return "Sure, let's break that down! Equity or down payment requirements depend on the specific loan type (such as mortgages or vehicle loans) and your credit profile. Please contact CUB Credit Services at (268) 481-8285 or creditservices@cub.ag for exact deposit guidelines tailored to your scenario.";
         }
 
         // 7. Repayment Terms
         if (qLower.includes("repayment term") || (qLower.includes("repayment") && (qLower.includes("long") || qLower.includes("years") || qLower.includes("period")))) {
-          return "Repayment terms at Caribbean Union Bank are flexible and depend on the loan facility:\n\n• Mortgages: Up to 30 years\n• Vehicle Loans: Typically 3 to 7 years\n• Personal / Consumer Loans: Tailored based on loan amount and income";
+          return "Sure, let's take a look at repayment terms! At Caribbean Union Bank, terms are flexible depending on the loan facility:\n\n• Mortgages: Up to 30 years\n• Vehicle Loans: Typically 3 to 7 years\n• Personal / Consumer Loans: Tailored based on loan amount and income";
         }
 
         // 8. Credit Card Payments
         if (qLower.includes("payment") && (qLower.includes("card") || qLower.includes("credit card"))) {
-          return "You can easily make payments toward your CUB credit card account through:\n\n1. CUB Internet Banking / Mobile App (instant transfer)\n2. Automatic Standing Order from your CUB account\n3. Over-the-counter payment at any CUB branch\n4. Wire transfer or cheque deposit";
+          return "I'd be glad to help with that! You can easily make payments toward your CUB credit card account through:\n\n1. CUB Internet Banking / Mobile App (instant transfer)\n2. Automatic Standing Order from your CUB account\n3. Over-the-counter payment at any CUB branch\n4. Wire transfer or cheque deposit";
         }
 
         // 9. Authorized User
         if (qLower.includes("authorized user") || (qLower.includes("add") && qLower.includes("card"))) {
-          return "To add an Authorized User to your credit card, simply visit any CUB branch or submit a Credit Card Amendment request along with a valid government photo ID (Passport or Driver's License) for the authorized user.";
+          return "Sure, let's sort that out! To add an Authorized User to your credit card, simply visit any CUB branch or submit a Credit Card Amendment request along with a valid government photo ID (Passport or Driver's License) for the authorized user.";
         }
 
         // 10. Interest Rates, APY, Loans & Calculator
@@ -914,7 +917,7 @@ async function startServer() {
           qLower.includes("percent") ||
           qLower.includes("%")
         ) {
-          return "Here are Caribbean Union Bank's current interest rates and prime lending benchmarks:\n\n• Priority Savings: 2.00% APY ($100 min opening amount)\n• Prestige Savings: Minimum 2.50% APY ($1,000 min opening amount)\n• Dollar A Day Savings: Minimum 2.25% APY ($100 min opening amount)\n• Premium Savers: Minimum 2.75% APY ($5,000 min opening amount)\n• Prime Lending Rate: Benchmark 10.00%, adjusted based on individual credit history.\n\n💡 I warmly invite you to try our interactive CUB Interest & Loan Calculator in the application to estimate exact monthly payments and growth projections!";
+          return "Sure, let's dive into those rates for you! Here are Caribbean Union Bank's current interest rates and prime lending benchmarks:\n\n• Priority Savings: 2.00% APY ($100 min opening amount)\n• Prestige Savings: Minimum 2.50% APY ($1,000 min opening amount)\n• Dollar A Day Savings: Minimum 2.25% APY ($100 min opening amount)\n• Premium Savers: Minimum 2.75% APY ($5,000 min opening amount)\n• Prime Lending Rate: Benchmark 10.00%, adjusted based on individual credit history.\n\n💡 I warmly invite you to try our interactive CUB Interest & Loan Calculator in the application to estimate exact monthly payments and growth projections!";
         }
 
         // 11. Branch Hours, Locations, Addresses (SPECIFIC MATCHING ONLY)
@@ -934,36 +937,63 @@ async function startServer() {
           qLower.includes("where are you") ||
           qLower.includes("where is cub")
         ) {
-          return "Caribbean Union Bank Branch Locations & Hours:\n\n• Headquarters (Friars Hill Road):\n  - Friars Hill Road, St. John's (Tel: 268-481-8278 | customer.service@cub.ag)\n  - Hours: Mon–Thu 8:00am–2:00pm | Fri 8:00am–3:00pm\n\n• Factory Road Branch:\n  - Starling Business Complex, Factory Road (Tel: 268-481-8285)\n  - Hours: Mon–Thu 8:00am–2:00pm | Fri 8:00am–3:00pm\n\n• Jolly Harbour Branch:\n  - Valley Road, Jolly Harbour Marina (Tel: 268-481-8265)\n  - Hours: Mon–Fri 9:00am–1:00pm\n\nWebsite: https://caribbeanunionbank.com";
+          return "Sure, let's get you connected! Here are Caribbean Union Bank Branch Locations & Hours:\n\n• Headquarters (Friars Hill Road):\n  - Friars Hill Road, St. John's (Tel: 268-481-8278 | customer.service@cub.ag)\n  - Hours: Mon–Thu 8:00am–2:00pm | Fri 8:00am–3:00pm\n\n• Factory Road Branch:\n  - Starling Business Complex, Factory Road (Tel: 268-481-8285)\n  - Hours: Mon–Thu 8:00am–2:00pm | Fri 8:00am–3:00pm\n\n• Jolly Harbour Branch:\n  - Valley Road, Jolly Harbour Marina (Tel: 268-481-8265)\n  - Hours: Mon–Fri 9:00am–1:00pm\n\nWebsite: https://caribbeanunionbank.com";
         }
 
         // 12. Loans & Mortgages
         if (qLower.includes("loan") || qLower.includes("mortgage") || qLower.includes("borrow") || qLower.includes("land") || qLower.includes("vehicle") || qLower.includes("car")) {
-          return "Caribbean Union Bank offers flexible financing options to fit your needs:\n\n• **Mortgages**: Residential purchases, construction, and remodeling.\n• **Vehicle Loans**: Competitive financing for new and pre-owned automobiles.\n• **Land Purchase Loans**: Financing for residential or commercial land plots.\n• **Personal / Consumer Loans**: Financing for education, travel, medical expenses, debt consolidation, home repairs, and more.\n\n• **Prime Lending Rate**: CUB's current Prime Lending Rate is 10.00%. The interest rate offered to each customer may be higher or lower depending on credit history and the results of CUB's credit assessment.\n\nFor personalized loan advice or to begin an application, contact CUB Credit Services at (268) 481-8285 or email creditservices@cub.ag.\n\n💡 *Tip: You can also use our interactive CUB Interest & Loan Calculator in the app to estimate monthly payments!*";
+          return "Sure, let's explore your financing options! Caribbean Union Bank offers flexible financing options to fit your needs:\n\n• **Mortgages**: Residential purchases, construction, and remodeling.\n• **Vehicle Loans**: Competitive financing for new and pre-owned automobiles.\n• **Land Purchase Loans**: Financing for residential or commercial land plots.\n• **Personal / Consumer Loans**: Financing for education, travel, medical expenses, debt consolidation, home repairs, and more.\n\n• **Prime Lending Rate**: CUB's current Prime Lending Rate is 10.00%. The interest rate offered to each customer may be higher or lower depending on credit history and the results of CUB's credit assessment.\n\nFor personalized loan advice or to begin an application, contact CUB Credit Services at (268) 481-8285 or email creditservices@cub.ag.\n\n💡 *Tip: You can also use our interactive CUB Interest & Loan Calculator in the app to estimate monthly payments!*";
         }
 
         // 13. Accounts & Savings
         if (qLower.includes("account") || qLower.includes("saving") || qLower.includes("checking") || qLower.includes("chequing") || qLower.includes("cd") || qLower.includes("deposit") || qLower.includes("junior")) {
-          return "Caribbean Union Bank Account Options & Interest Rates:\n\n### Personal Savings Accounts\n• **Priority Savings**: 2.00% APY ($100 min opening amount) — flexible access, ATM debit card, e-statements.\n• **Prestige Savings**: Minimum 2.50% APY ($1,000 min opening amount) — higher tiered rates.\n• **Dollar A Day Savings**: Minimum 2.25% APY ($100 min opening amount) — builds disciplined savings habits.\n• **Premium Savers**: Minimum 2.75% APY ($5,000 min opening amount) — maximum interest yield.\n• **Junior Savers Account**: Special interest rate for youth up to age 18 to foster money habits early.\n\n### Current / Chequing Accounts\n• **Current Account**: Day-to-day checking with chequebook, international CUB Visa Debit Card, and 24/7 Internet & Mobile Banking.\n\n### Fixed Deposits & Business\n• **Certificates of Deposit (CDs)**: Guaranteed fixed term investments (3-month to multi-year).\n• **Corporate & Business Accounts**: Tailored for business operations, payroll direct deposits, and merchant services.\n\n💡 *Use our interactive CUB Interest Calculator in the app to project your savings growth over time!*";
+          return "Sure, let's take a look at our account options! Caribbean Union Bank offers:\n\n### Personal Savings Accounts\n• **Priority Savings**: 2.00% APY ($100 min opening amount) — flexible access, ATM debit card, e-statements.\n• **Prestige Savings**: Minimum 2.50% APY ($1,000 min opening amount) — higher tiered rates.\n• **Dollar A Day Savings**: Minimum 2.25% APY ($100 min opening amount) — builds disciplined savings habits.\n• **Premium Savers**: Minimum 2.75% APY ($5,000 min opening amount) — maximum interest yield.\n• **Junior Savers Account**: Special interest rate for youth up to age 18 to foster money habits early.\n\n### Current / Chequing Accounts\n• **Current Account**: Day-to-day checking with chequebook, international CUB Visa Debit Card, and 24/7 Internet & Mobile Banking.\n\n### Fixed Deposits & Business\n• **Certificates of Deposit (CDs)**: Guaranteed fixed term investments (3-month to multi-year).\n• **Corporate & Business Accounts**: Tailored for business operations, payroll direct deposits, and merchant services.\n\n💡 *Use our interactive CUB Interest Calculator in the app to project your savings growth over time!*";
         }
 
         // 14. Online Banking, App, Wire
         if (qLower.includes("online") || qLower.includes("internet") || qLower.includes("app") || qLower.includes("transfer") || qLower.includes("e-statement") || qLower.includes("wire") || qLower.includes("swift")) {
-          return "CUB Digital Banking & Card Services:\n\n• Internet Banking & Mobile App: 24/7 web access at https://caribbeanunionbank.com to view balances, internal transfers, e-statements & bill payments\n• CUB Visa Debit & Credit Cards: Chip-and-PIN protection for global ATM cash withdrawals & shopping\n• Wire Transfers: Local & SWIFT international wire transfers\n• Lost / Stolen Cards Support: Call Card Services immediately at (268) 481-8250 or email cardservices@cub.ag";
+          return "Sure, let's get you set up with CUB digital and wire services:\n\n• Internet Banking & Mobile App: 24/7 web access at https://caribbeanunionbank.com to view balances, internal transfers, e-statements & bill payments\n• CUB Visa Debit & Credit Cards: Chip-and-PIN protection for global ATM cash withdrawals & shopping\n• Wire Transfers: Local & SWIFT international wire transfers\n• Lost / Stolen Cards Support: Call Card Services immediately at (268) 481-8250 or email cardservices@cub.ag";
         }
 
         // 15. Contact Directory
         if (qLower.includes("contact") || qLower.includes("phone") || qLower.includes("email") || qLower.includes("support") || qLower.includes("department")) {
-          return "Caribbean Union Bank Department Directory:\n\n• Customer Service: (268) 481-8278 | customer.service@cub.ag\n• Credit Services (Loans): (268) 481-8285 | creditservices@cub.ag\n• Card Services (Lost/Stolen Cards): (268) 481-8250 | cardservices@cub.ag\n• Business Development: (268) 481-8244 | businessdevelopment@cub.ag\n• Human Resources: (268) 481-8285 | hr@cub.ag\n• Finance Department: (268) 481-8278 | finance@cub.ag";
+          return "Sure, here is our direct department directory:\n\n• Customer Service: (268) 481-8278 | customer.service@cub.ag\n• Credit Services (Loans): (268) 481-8285 | creditservices@cub.ag\n• Card Services (Lost/Stolen Cards): (268) 481-8250 | cardservices@cub.ag\n• Business Development: (268) 481-8244 | businessdevelopment@cub.ag\n• Human Resources: (268) 481-8285 | hr@cub.ag\n• Finance Department: (268) 481-8278 | finance@cub.ag";
         }
 
         // 16. About CUB
         if (qLower.includes("never heard") || qLower.includes("who are you") || qLower.includes("about caribbean union bank") || qLower.includes("what is cub")) {
-          return "Caribbean Union Bank (CUB) is a premier indigenous, full-service commercial bank operating in Antigua and Barbuda. Headquartered on Friars Hill Road in St. John's, we offer personal & commercial banking, high-yield savings, mortgages, vehicle loans, credit cards, and 24/7 online banking. Learn more anytime at https://caribbeanunionbank.com!";
+          return "Sure, I'd love to introduce us! Caribbean Union Bank (CUB) is a premier indigenous, full-service commercial bank operating in Antigua and Barbuda. Headquartered on Friars Hill Road in St. John's, we offer personal & commercial banking, high-yield savings, mortgages, vehicle loans, credit cards, and 24/7 online banking. Learn more anytime at https://caribbeanunionbank.com!";
+        }
+
+        // Unrelated / Off-topic detector
+        const hasBankingContext = 
+          qLower.includes("bank") || qLower.includes("cub") || qLower.includes("account") ||
+          qLower.includes("loan") || qLower.includes("mortgage") || qLower.includes("save") ||
+          qLower.includes("rate") || qLower.includes("card") || qLower.includes("branch") ||
+          qLower.includes("hour") || qLower.includes("money") || qLower.includes("deposit") ||
+          qLower.includes("withdraw") || qLower.includes("transfer") || qLower.includes("open") ||
+          qLower.includes("id") || qLower.includes("passport") || qLower.includes("job") ||
+          qLower.includes("credit") || qLower.includes("debit") || qLower.includes("atm") ||
+          qLower.includes("contact") || qLower.includes("phone") || qLower.includes("help") ||
+          qLower.includes("hi") || qLower.includes("hello") || qLower.includes("hey") ||
+          qLower.includes("morning") || qLower.includes("afternoon") || qLower.includes("evening") ||
+          qLower.includes("greetings") || qLower.includes("sup") || qLower.includes("thanks") ||
+          qLower.includes("thank") || qLower.includes("invest") || qLower.includes("cheque") ||
+          qLower.includes("chequing") || qLower.includes("swift") || qLower.includes("wire") ||
+          qLower.includes("tin") || qLower.includes("address") || qLower.includes("salary") ||
+          qLower.includes("pay") || qLower.includes("car") || qLower.includes("land") ||
+          qLower.includes("junior") || qLower.includes("prestige") || qLower.includes("priority") ||
+          qLower.includes("premium") || qLower.includes("dollar") || qLower.includes("certificate") ||
+          qLower.includes("faq") || qLower.includes("service") || qLower.includes("security") ||
+          qLower.includes("travel") || qLower.includes("limit") || qLower.includes("balance");
+
+        if (!hasBankingContext && query.trim().length > 0) {
+          const cleanInput = query.trim();
+          return `As delicious and fun as "${cleanInput}" sounds, it's a bit outside my wheelhouse as your Caribbean Union Bank virtual banking assistant! I'm here specifically to help you with CUB accounts, savings interest rates, loans, credit cards, branch hours, and digital banking services. What banking topic can I help you sort out today?`;
         }
 
         // Fallback default response
-        return "Hello! I'm CUB AI, your digital assistant for Caribbean Union Bank. I can help you with account document requirements, savings interest rates, loan applications, credit cards, or branch hours. How may I assist you today?";
+        return "Sure, let's dive into that for you! I'm Ava, your friendly virtual assistant here at Caribbean Union Bank. I can help you with account document requirements, savings interest rates, loan options, or branch hours. What's on your mind today?";
       };
 
       const getCleanEnvVar = (names: string[]): string | undefined => {
@@ -1057,7 +1087,7 @@ async function startServer() {
 
       // 1. Try Gemini first (fastest & most reliable) if geminiKey is available
       if (!responseText && geminiKey) {
-        const geminiModels = ["gemini-3.6-flash", "gemini-3.7-flash", "gemini-flash-latest"];
+        const geminiModels = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.7-flash"];
         for (const modelName of geminiModels) {
           try {
             const ai = new GoogleGenAI({

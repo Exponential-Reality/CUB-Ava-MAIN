@@ -27,7 +27,7 @@ const createDefaultSession = (): ChatSession => {
         id: "msg-welcome-" + Date.now(),
         role: "assistant",
         content:
-          "Hello! Welcome to Caribbean Union Bank. I'm CUB AI, your virtual banking representative. How can I assist you today? Feel free to ask about our personal savings accounts, mortgages, credit cards, or branch locations!",
+          "Hello! What do you need help with today? Whether you're checking interest rates, looking into loan options, or need branch hours, I'm right here to walk you through it!",
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
       },
     ],
@@ -239,7 +239,7 @@ export const App: React.FC = () => {
       return "Caribbean Union Bank Branch Locations & Operating Hours:\n\n• **Friars Hill Road Headquarters**: Mon–Thu 8:00am–2:00pm | Fri 8:00am–3:00pm (Tel: 268-481-8278)\n• **Factory Road Branch**: Mon–Thu 8:00am–2:00pm | Fri 8:00am–3:00pm (Tel: 268-481-8285)\n• **Jolly Harbour Branch**: Mon–Fri 9:00am–1:00pm (Tel: 268-481-8265)\n\nAll locations feature 24/7 ATMs. Reach Customer Service at (268) 481-8278 or customer.service@cub.ag!";
     }
 
-    return "Hello! Welcome to Caribbean Union Bank. I'm CUB AI, your virtual banking representative. How can I assist you today? Feel free to ask about our personal savings accounts, mortgages, credit cards, or branch locations!";
+    return "Hey there! I'm Ava, your friendly virtual assistant here at Caribbean Union Bank. I can help you with account document requirements, savings interest rates, loan options, or branch hours. What's on your mind today?";
   };
 
   const handleSendMessage = async (text: string) => {
