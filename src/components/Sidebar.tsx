@@ -2,9 +2,10 @@ import React, { useState } from "react";
 import { ThemeName, BranchLocation, ChatSession, BackgroundAnimMode } from "../types";
 import { THEMES, LOCATIONS, NAV_ITEMS } from "../data/bankData";
 import { LogoSvg } from "./LogoSvg";
-import { LANGUAGES_LIST, LanguageOption } from "./LanguageSelectorBar";
+import { LANGUAGES_LIST, LanguageOption } from "../data/languages";
 import { getTranslation } from "../utils/i18n";
-import { Lock, MapPin, PhoneCall, Headphones, X, PlusCircle, Calculator, Home, CreditCard, ArrowRightLeft, TrendingUp, ShieldCheck, HelpCircle, Landmark, MessageSquare, Trash2, History, Sparkles, Monitor, ChevronDown, Layers, Database, Globe2, Search, Check } from "lucide-react";
+import { ELEVENLABS_VOICES } from "../utils/speech";
+import { Lock, MapPin, PhoneCall, Headphones, X, PlusCircle, Calculator, Home, CreditCard, ArrowRightLeft, TrendingUp, ShieldCheck, HelpCircle, Landmark, MessageSquare, Trash2, History, Sparkles, Monitor, ChevronDown, Layers, Globe2, Search, Check, Volume2, Mic, User, LogOut } from "lucide-react";
 
 interface SidebarProps {
   currentTheme: ThemeName;
@@ -14,7 +15,6 @@ interface SidebarProps {
   onSelectNavPrompt: (prompt: string) => void;
   onNewChat: () => void;
   onOpenCalculator?: () => void;
-  onOpenSqliteModal?: () => void;
   isOpenMobile: boolean;
   onCloseMobile: () => void;
   sessions?: ChatSession[];
@@ -23,6 +23,11 @@ interface SidebarProps {
   onDeleteSession?: (id: string) => void;
   language?: string;
   onSelectLanguage?: (code: string) => void;
+  voiceId?: string;
+  onSelectVoice?: (id: string) => void;
+  loggedInUser?: string | null;
+  onOpenLoginModal?: () => void;
+  onLogout?: () => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -33,7 +38,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectNavPrompt,
   onNewChat,
   onOpenCalculator,
-  onOpenSqliteModal,
   isOpenMobile,
   onCloseMobile,
   sessions = [],
@@ -42,10 +46,16 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onDeleteSession,
   language = "en",
   onSelectLanguage,
+  voiceId = "cgSgspJ2msm6clMCkdW9",
+  onSelectVoice,
+  loggedInUser,
+  onOpenLoginModal,
+  onLogout,
 }) => {
   const [showBranches, setShowBranches] = useState(false);
   const [showAnimDropdown, setShowAnimDropdown] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
+  const [showVoiceDropdown, setShowVoiceDropdown] = useState(false);
   const [langSearchQuery, setLangSearchQuery] = useState<string>("");
   const [selectedBranchKey, setSelectedBranchKey] = useState<string>(
     "Headquarters — Friars Hill Road"
@@ -86,6 +96,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleNavClick = (label: string, prompt: string) => {
+    if (!loggedInUser) {
+      if (onOpenLoginModal) onOpenLoginModal();
+      onCloseMobile();
+      return;
+    }
     if (label === "Home") {
       onNewChat();
     } else if (prompt) {
@@ -103,6 +118,19 @@ export const Sidebar: React.FC<SidebarProps> = ({
     } else if (action === "support") {
       onSelectNavPrompt("I'd like to speak with a live support agent");
       onCloseMobile();
+    }
+  };
+
+  const getNavLocalizedLabel = (label: string): string => {
+    switch (label) {
+      case "Home": return t.navHome;
+      case "Accounts": return t.navAccounts;
+      case "Transfers": return t.navTransfers;
+      case "Investments": return t.navInvestments;
+      case "Loans": return t.navLoans;
+      case "Security": return t.navSecurity;
+      case "Support": return t.navSupport;
+      default: return label;
     }
   };
 
@@ -149,10 +177,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
           <div>
             <h3 className="m-0 font-['Sora'] text-[13px] font-bold text-[var(--brand-teal)] leading-tight">
-              Caribbean Union Bank
+              {t.appName}
             </h3>
             <p className="m-0 text-[10px] font-bold tracking-wider uppercase text-[var(--t-primary)]">
-              AI Chatbox
+              {t.appSubtitle}
             </p>
           </div>
         </div>
@@ -163,17 +191,51 @@ export const Sidebar: React.FC<SidebarProps> = ({
             onNewChat();
             onCloseMobile();
           }}
-          className="w-full mb-3.5 group relative flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-[var(--t-primary)] to-[var(--t-secondary)] text-[#0a0806] font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-[var(--t-glow)] hover:shadow-xl hover:brightness-110 active:scale-[0.98] transition-all duration-200 cursor-pointer border border-white/20"
+          className="w-full mb-3 group relative flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-[var(--t-primary)] to-[var(--t-secondary)] text-[#0a0806] font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-[var(--t-glow)] hover:shadow-xl hover:brightness-110 active:scale-[0.98] transition-all duration-200 cursor-pointer border border-white/20"
         >
           <PlusCircle className="w-4 h-4 text-[#0a0806] group-hover:rotate-90 transition-transform duration-300 shrink-0" />
           <span className="font-['Sora'] font-bold text-[13px]">{t.newConversation}</span>
           <Sparkles className="w-3.5 h-3.5 text-[#0a0806]/70 group-hover:scale-125 transition-transform shrink-0 ml-auto" />
         </button>
 
+        {/* User Login / Account Portal Card */}
+        <div className="mb-3.5 p-2.5 rounded-2xl bg-white/5 border border-[var(--line)] flex items-center justify-between gap-2 shadow-sm">
+          <div className="flex items-center gap-2 min-w-0">
+            <div className="w-8 h-8 rounded-xl bg-[var(--t-primary)]/20 border border-[var(--t-primary)]/40 flex items-center justify-center text-[var(--t-primary)] shrink-0 font-bold">
+              <User className="w-4 h-4" />
+            </div>
+            <div className="min-w-0 truncate">
+              <div className="text-[11px] font-bold text-white truncate">
+                {loggedInUser || "Guest Client"}
+              </div>
+              <div className="text-[9px] text-gray-400 truncate">
+                {loggedInUser ? "CUB Secure Banking" : "Sign in for account access"}
+              </div>
+            </div>
+          </div>
+          {loggedInUser ? (
+            <button
+              onClick={onLogout}
+              className="text-[10px] px-2 py-1 rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/20 font-semibold transition-all cursor-pointer shrink-0"
+              title="Sign Out"
+            >
+              Sign Out
+            </button>
+          ) : (
+            <button
+              onClick={onOpenLoginModal}
+              className="text-[10px] px-2.5 py-1 rounded-lg bg-[var(--t-primary)] text-[#0a0806] hover:opacity-90 font-bold transition-all cursor-pointer shrink-0 shadow-sm"
+            >
+              Sign In
+            </button>
+          )}
+        </div>
+
         {/* Navigation Menu */}
         <div className="space-y-1 mb-4">
           {NAV_ITEMS.map((item, idx) => {
             const isHome = item.label === "Home";
+            const localizedLabel = getNavLocalizedLabel(item.label);
             return (
               <button
                 key={item.label}
@@ -185,7 +247,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                 }`}
               >
                 {getNavIcon(item.label)}
-                <span>{item.label}</span>
+                <span>{localizedLabel}</span>
               </button>
             );
           })}
@@ -195,14 +257,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <div className="mb-4">
           <div className="side-section-label mb-1.5 flex items-center justify-between">
             <span className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--t-primary)] uppercase tracking-wider">
-              <History className="w-3.5 h-3.5" /> Saved Chats ({sessions.length})
+              <History className="w-3.5 h-3.5" /> {t.savedChats} ({sessions.length})
             </span>
           </div>
 
           <div className="space-y-1 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
             {sessions.length === 0 ? (
               <p className="text-[11px] text-[var(--text-faint)] italic px-2 py-1.5">
-                No saved chats yet.
+                {t.noSavedChats}
               </p>
             ) : (
               sessions.map((sess) => {
@@ -211,6 +273,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <div
                     key={sess.id}
                     onClick={() => {
+                      if (!loggedInUser) {
+                        if (onOpenLoginModal) onOpenLoginModal();
+                        onCloseMobile();
+                        return;
+                      }
                       if (onSelectSession) onSelectSession(sess.id);
                       onCloseMobile();
                     }}
@@ -228,7 +295,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                       />
                       <div className="min-w-0 flex-1">
                         <div className="truncate text-[12px] font-medium leading-tight text-gray-200 group-hover:text-white">
-                          {sess.title || "New Conversation"}
+                          {sess.title || t.newConversation}
                         </div>
                         <div className="text-[10px] text-gray-400 mt-0.5 flex items-center gap-1.5">
                           <span>{formatDate(sess.updatedAt)}</span>
@@ -256,18 +323,23 @@ export const Sidebar: React.FC<SidebarProps> = ({
         </div>
 
         {/* Quick Actions & Code Export */}
-        <div className="side-section-label">Quick Tools</div>
+        <div className="side-section-label">{t.quickTools}</div>
         <div className="space-y-1 mb-3">
           {onOpenCalculator && (
             <button
               onClick={() => {
+                if (!loggedInUser) {
+                  if (onOpenLoginModal) onOpenLoginModal();
+                  onCloseMobile();
+                  return;
+                }
                 onOpenCalculator();
                 onCloseMobile();
               }}
               className="w-full text-left px-3.5 py-2 rounded-[var(--radius-md)] text-[12px] font-bold text-[#0a0806] bg-gradient-to-r from-[var(--t-primary)] to-[var(--t-secondary)] hover:brightness-110 flex items-center gap-2 shadow-md transition-all cursor-pointer"
             >
               <Calculator className="w-4 h-4 shrink-0" />
-              CUB Interest Calculator
+              {t.calculatorTitle}
             </button>
           )}
 
@@ -276,7 +348,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full text-left px-3.5 py-2 rounded-[var(--radius-md)] text-[13px] font-medium text-[var(--text-soft)] hover:bg-white/5 hover:text-white flex items-center gap-2 cursor-pointer"
           >
             <MapPin className="w-4 h-4 text-[var(--t-primary)]" />
-            Branch Locator
+            {t.branchLocations}
           </button>
 
           <button
@@ -284,14 +356,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
             className="w-full text-left px-3.5 py-2 rounded-[var(--radius-md)] text-[13px] font-medium text-[var(--text-soft)] hover:bg-white/5 hover:text-white flex items-center gap-2 cursor-pointer"
           >
             <PhoneCall className="w-4 h-4 text-[var(--t-primary)]" />
-            Contact Us
+            {t.contactUs}
           </button>
         </div>
 
         {/* Branch Dropdown details if branch locator active */}
         {showBranches && (
           <div className="mb-4">
-            <div className="side-section-label">Branches & Contact</div>
+            <div className="side-section-label">{t.branchHours}</div>
             <select
               value={selectedBranchKey}
               onChange={(e) => setSelectedBranchKey(e.target.value)}
@@ -329,18 +401,18 @@ export const Sidebar: React.FC<SidebarProps> = ({
 
         {/* Language Selector Dropdown Menu */}
         <div className="mb-3 relative">
-          <div className="side-section-label">Language Support</div>
+          <div className="side-section-label">{t.languageSupport}</div>
           <button
             onClick={() => setShowLangDropdown((prev) => !prev)}
             className="w-full text-left px-3 py-2 rounded-[var(--radius-md)] text-xs font-semibold bg-white/5 border border-[var(--line)] hover:border-[var(--t-primary)]/50 text-white flex items-center justify-between transition-all cursor-pointer shadow-sm hover:shadow-md"
-            title="Select Language (24+ Languages)"
+            title={t.selectLanguageTitle}
           >
             <div className="flex items-center gap-2 min-w-0">
               <span className="text-base shrink-0">{currentLang.flag}</span>
               <span className="truncate text-gray-200">{currentLang.name}</span>
             </div>
             <div className="flex items-center gap-1">
-              <span className="text-[10px] text-[var(--t-primary)] font-bold">24+</span>
+              <span className="text-[10px] text-[var(--t-primary)] font-bold">24</span>
               <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showLangDropdown ? "rotate-180" : ""}`} />
             </div>
           </button>
@@ -349,7 +421,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <div className="absolute left-0 right-0 mt-1.5 bg-[#14100c] border border-[var(--line)] rounded-2xl p-2.5 shadow-2xl z-50 animate-fadeIn backdrop-blur-xl space-y-2">
               <div className="flex items-center justify-between gap-1 border-b border-white/5 pb-1.5">
                 <span className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--t-primary)] flex items-center gap-1.5">
-                  <Globe2 className="w-3 h-3" /> Select Language
+                  <Globe2 className="w-3 h-3" /> {t.selectLanguageTitle}
                 </span>
               </div>
               <div className="relative">
@@ -358,7 +430,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   type="text"
                   value={langSearchQuery}
                   onChange={(e) => setLangSearchQuery(e.target.value)}
-                  placeholder="Search languages..."
+                  placeholder={t.searchLanguages}
                   className="w-full pl-8 pr-3 py-1 text-xs bg-black/50 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[var(--t-primary)]"
                 />
               </div>
@@ -381,11 +453,20 @@ export const Sidebar: React.FC<SidebarProps> = ({
                           : "text-[var(--text-soft)] hover:bg-white/5 hover:text-white"
                       }`}
                     >
-                      <div className="flex items-center gap-2 truncate">
-                        <span>{lang.flag}</span>
-                        <span className="truncate">{lang.name}</span>
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-sm shrink-0">{lang.flag}</span>
+                        <div className="min-w-0 truncate">
+                          <span className="text-white block truncate leading-tight font-semibold">
+                            {lang.name}
+                          </span>
+                          <span className="text-[10px] text-gray-400 block truncate">
+                            {lang.nativeName}
+                          </span>
+                        </div>
                       </div>
-                      {isSelected && <Check className="w-3 h-3 text-[var(--t-primary)] shrink-0" />}
+                      {isSelected && (
+                        <Check className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0 stroke-[3]" />
+                      )}
                     </button>
                   );
                 })}
@@ -394,12 +475,88 @@ export const Sidebar: React.FC<SidebarProps> = ({
           )}
         </div>
 
-        {/* Background Animation Mode Selector (Dropdown Menu) */}
+        {/* Voice Persona Selector */}
+        <div className="mb-3 relative">
+          <div className="side-section-label">Voice & Accent</div>
+          <button
+            onClick={() => {
+              if (!loggedInUser) {
+                if (onOpenLoginModal) onOpenLoginModal();
+                return;
+              }
+              setShowVoiceDropdown((prev) => !prev);
+            }}
+            className="w-full text-left px-3 py-2 rounded-[var(--radius-md)] text-xs font-semibold bg-white/5 border border-[var(--line)] hover:border-[var(--t-primary)]/50 text-white flex items-center justify-between transition-all cursor-pointer shadow-sm hover:shadow-md"
+            title="Select AI Voice Persona"
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <Volume2 className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />
+              <span className="truncate text-gray-200">
+                {ELEVENLABS_VOICES.find((v) => v.id === voiceId)?.name || "Jessica (Friendly & Clear)"}
+              </span>
+            </div>
+            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showVoiceDropdown ? "rotate-180" : ""}`} />
+          </button>
+
+          {showVoiceDropdown && (
+            <div className="absolute left-0 right-0 mt-1.5 bg-[#14100c] border border-[var(--line)] rounded-2xl p-2.5 shadow-2xl z-50 animate-fadeIn backdrop-blur-xl space-y-1.5">
+              <div className="flex items-center justify-between border-b border-white/5 pb-1.5">
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--t-primary)] flex items-center gap-1.5">
+                  <Mic className="w-3 h-3" /> AI Voice Persona
+                </span>
+              </div>
+              <div className="space-y-1">
+                {ELEVENLABS_VOICES.map((v) => {
+                  const isSelected = voiceId === v.id;
+                  return (
+                    <button
+                      key={v.id}
+                      onClick={() => {
+                        if (onSelectVoice) onSelectVoice(v.id);
+                        setShowVoiceDropdown(false);
+                      }}
+                      className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${
+                        isSelected
+                          ? "bg-[var(--t-primary)]/25 text-white font-bold border border-[var(--t-primary)]/50 shadow-sm"
+                          : "text-[var(--text-soft)] hover:bg-white/5 hover:text-white"
+                      }`}
+                    >
+                      <div className="min-w-0">
+                        <div className="text-white block truncate leading-tight font-semibold">
+                          {v.name}
+                        </div>
+                        {v.persona && (
+                          <div className="text-[10px] text-gray-400 block truncate">
+                            {v.persona}
+                          </div>
+                        )}
+                      </div>
+                      {isSelected && (
+                        <Check className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0 stroke-[3]" />
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+              <div className="text-[9px] text-gray-400 border-t border-white/5 pt-1.5 px-1 leading-normal">
+                Caribbean English, Antiguan Creole, Jamaican Patois, Spanish &amp; 24 languages supported with zero robotic distortion.
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Background Animation Motion Preset */}
         {onChangeAnimMode && (
           <div className="mb-3 relative">
-            <div className="side-section-label">Background Motion</div>
+            <div className="side-section-label">{t.animModeSelector}</div>
             <button
-              onClick={() => setShowAnimDropdown((prev) => !prev)}
+              onClick={() => {
+                if (!loggedInUser) {
+                  if (onOpenLoginModal) onOpenLoginModal();
+                  return;
+                }
+                setShowAnimDropdown((prev) => !prev);
+              }}
               className="w-full text-left px-3 py-2 rounded-[var(--radius-md)] text-xs font-semibold bg-white/5 border border-[var(--line)] hover:border-[var(--t-primary)]/50 text-white flex items-center justify-between transition-all cursor-pointer shadow-sm hover:shadow-md"
               title="Select Animation Preset"
             >
@@ -455,7 +612,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
         )}
 
         {/* Background Theme Selector */}
-        <div className="side-section-label">Color Theme</div>
+        <div className="side-section-label">{t.themeSelector}</div>
         <div className="grid grid-cols-2 gap-1.5 mb-4">
           {(Object.keys(THEMES) as ThemeName[]).map((themeName) => {
             const isSelected = currentTheme === themeName;

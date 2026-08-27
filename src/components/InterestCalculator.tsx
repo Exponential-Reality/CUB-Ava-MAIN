@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Calculator, Sparkles, AlertCircle, ArrowRight, DollarSign, Percent, Calendar, CheckCircle2, Copy, Check } from "lucide-react";
 import { copyToClipboard } from "../utils/clipboard";
+import { getTranslation } from "../utils/i18n";
 
 export interface RateOption {
   id: string;
@@ -64,12 +65,14 @@ interface InterestCalculatorProps {
   onAskAi?: (prompt: string) => void;
   onClose?: () => void;
   isModal?: boolean;
+  language?: string;
 }
 
 export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
   onAskAi,
   onClose,
   isModal = false,
+  language = "en",
 }) => {
   const [selectedId, setSelectedId] = useState<string>("priority_savings");
   const [principal, setPrincipal] = useState<number>(1000);
@@ -79,6 +82,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
   const [compounding, setCompounding] = useState<"monthly" | "annually">("monthly");
   const [copied, setCopied] = useState<boolean>(false);
 
+  const t = getTranslation(language);
   const selectedOption = CUB_RATE_OPTIONS.find((o) => o.id === selectedId) || CUB_RATE_OPTIONS[0];
 
   // Close on Escape key press
@@ -103,7 +107,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
   // Calculation Logic
   const isLoan = selectedOption.type === "loan";
   const r = customRate / 100;
-  const t = termYears;
+  const termTime = termYears;
   const n = compounding === "monthly" ? 12 : 1;
 
   let totalBalance = 0;
@@ -113,7 +117,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
 
   if (isLoan) {
     // Amortized Loan Repayment Formula: M = P * [i(1+i)^months] / [(1+i)^months - 1]
-    const months = t * 12;
+    const months = termTime * 12;
     const i = r / 12;
     if (i > 0 && months > 0) {
       monthlyPayment = (principal * (i * Math.pow(1 + i, months))) / (Math.pow(1 + i, months) - 1);
@@ -127,7 +131,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
   } else {
     // Compound Savings Formula:
     // A = P(1 + r/n)^(n*t) + PMT * [ ((1 + r/n)^(n*t) - 1) / (r/n) ]
-    const periods = n * t;
+    const periods = n * termTime;
     const ratePerPeriod = r / n;
     const pmtPerPeriod = compounding === "monthly" ? monthlyContribution : monthlyContribution * 12;
 
@@ -138,7 +142,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
         : pmtPerPeriod * periods;
 
     totalBalance = compoundPrincipal + compoundPMT;
-    totalContributions = principal + monthlyContribution * 12 * t;
+    totalContributions = principal + monthlyContribution * 12 * termTime;
     totalInterest = totalBalance - totalContributions;
   }
 
@@ -177,7 +181,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
           </div>
           <div>
             <h3 className="font-['Sora'] font-extrabold text-lg text-white leading-tight">
-              CUB Interest & Loan Calculator
+              {t.calculatorModalTitle}
             </h3>
             <p className="text-xs text-[var(--text-soft)]">
               Caribbean Union Bank Official Rates & Projections
@@ -191,7 +195,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
             className="flex items-center gap-1.5 text-xs font-bold text-gray-300 hover:text-white px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/20 border border-white/15 cursor-pointer transition-all shadow-sm"
             title="Close Calculator (Esc)"
           >
-            <span>Close</span>
+            <span>{t.close}</span>
             <span className="text-[10px] bg-black/40 px-1.5 py-0.5 rounded text-gray-400">ESC</span>
             <span className="text-sm leading-none ml-0.5">✕</span>
           </button>
@@ -239,20 +243,21 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
         </div>
       )}
 
-      {/* INPUT CONTROLS */}
+      {/* Input Sliders and Fields */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-5">
-        {/* Principal / Deposit Amount */}
+        {/* Principal / Loan Amount */}
         <div className="bg-[#18120c] p-3.5 rounded-xl border border-white/10">
           <label className="text-xs font-semibold text-gray-300 mb-1 block flex items-center justify-between">
-            <span>{isLoan ? "Loan Principal ($)" : "Initial Deposit ($)"}</span>
+            <span>{isLoan ? t.loanAmount : t.depositAmount}</span>
             <span className="text-[var(--t-primary)] font-bold">${principal.toLocaleString()}</span>
           </label>
           <div className="flex items-center gap-2 mb-2">
             <DollarSign className="w-4 h-4 text-gray-400" />
             <input
               type="number"
-              min={isLoan ? 500 : 50}
-              step={50}
+              min={100}
+              max={1000000}
+              step={100}
               value={principal}
               onChange={(e) => setPrincipal(Math.max(0, Number(e.target.value)))}
               className="w-full bg-[#221810] text-white font-bold text-sm rounded-lg px-2.5 py-1.5 border border-white/10 focus:border-[var(--t-primary)] focus:outline-none"
@@ -260,20 +265,20 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
           </div>
           <input
             type="range"
-            min={isLoan ? 500 : 50}
-            max={isLoan ? 100000 : 50000}
-            step={50}
+            min={100}
+            max={200000}
+            step={500}
             value={principal}
             onChange={(e) => setPrincipal(Number(e.target.value))}
             className="w-full accent-[var(--t-primary)] cursor-pointer"
           />
         </div>
 
-        {/* Monthly Contribution or Repayment */}
+        {/* Monthly Contribution (Savings) OR Loan Term (Loan) */}
         {!isLoan ? (
           <div className="bg-[#18120c] p-3.5 rounded-xl border border-white/10">
             <label className="text-xs font-semibold text-gray-300 mb-1 block flex items-center justify-between">
-              <span>Monthly Addition ($)</span>
+              <span>{t.monthlyContribution}</span>
               <span className="text-[var(--t-primary)] font-bold">${monthlyContribution.toLocaleString()}</span>
             </label>
             <div className="flex items-center gap-2 mb-2">
@@ -281,7 +286,8 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
               <input
                 type="number"
                 min={0}
-                step={25}
+                max={50000}
+                step={50}
                 value={monthlyContribution}
                 onChange={(e) => setMonthlyContribution(Math.max(0, Number(e.target.value)))}
                 className="w-full bg-[#221810] text-white font-bold text-sm rounded-lg px-2.5 py-1.5 border border-white/10 focus:border-[var(--t-primary)] focus:outline-none"
@@ -291,7 +297,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
               type="range"
               min={0}
               max={5000}
-              step={25}
+              step={50}
               value={monthlyContribution}
               onChange={(e) => setMonthlyContribution(Number(e.target.value))}
               className="w-full accent-[var(--t-primary)] cursor-pointer"
@@ -300,7 +306,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
         ) : (
           <div className="bg-[#18120c] p-3.5 rounded-xl border border-white/10">
             <label className="text-xs font-semibold text-gray-300 mb-1 block flex items-center justify-between">
-              <span>Loan Duration (Years)</span>
+              <span>{t.termYears}</span>
               <span className="text-[var(--t-primary)] font-bold">{termYears} Years</span>
             </label>
             <div className="flex items-center gap-2 mb-2">
@@ -328,29 +334,37 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
         {/* Interest Rate */}
         <div className="bg-[#18120c] p-3.5 rounded-xl border border-white/10">
           <label className="text-xs font-semibold text-gray-300 mb-1 block flex items-center justify-between">
-            <span>Interest Rate (%)</span>
-            <span className="text-[var(--t-primary)] font-bold">{customRate}%</span>
+            <span>{t.interestRate}</span>
+            <span className="text-[var(--t-primary)] font-bold">{customRate.toFixed(2)}%</span>
           </label>
           <div className="flex items-center gap-2 mb-2">
             <Percent className="w-4 h-4 text-gray-400" />
             <input
               type="number"
-              step={0.1}
+              step={0.05}
               min={0.1}
               max={25}
               value={customRate}
-              onChange={(e) => setCustomRate(Math.max(0.1, Number(e.target.value)))}
+              onChange={(e) => setCustomRate(Math.max(0.01, Number(e.target.value)))}
               className="w-full bg-[#221810] text-white font-bold text-sm rounded-lg px-2.5 py-1.5 border border-white/10 focus:border-[var(--t-primary)] focus:outline-none"
             />
           </div>
-          <p className="text-[10px] text-gray-400">Default benchmark for {selectedOption.name}</p>
+          <input
+            type="range"
+            step={0.05}
+            min={0.5}
+            max={15}
+            value={customRate}
+            onChange={(e) => setCustomRate(Number(e.target.value))}
+            className="w-full accent-[var(--t-primary)] cursor-pointer"
+          />
         </div>
 
-        {/* Term Years for Savings */}
+        {/* Savings Duration */}
         {!isLoan && (
           <div className="bg-[#18120c] p-3.5 rounded-xl border border-white/10">
             <label className="text-xs font-semibold text-gray-300 mb-1 block flex items-center justify-between">
-              <span>Savings Horizon</span>
+              <span>{t.termYears}</span>
               <span className="text-[var(--t-primary)] font-bold">{termYears} Years</span>
             </label>
             <div className="flex items-center gap-2 mb-2">
@@ -381,25 +395,25 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
         <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--t-primary)]/10 rounded-full blur-2xl pointer-events-none" />
 
         <h4 className="text-xs font-bold uppercase tracking-widest text-[var(--t-primary)] mb-3">
-          {isLoan ? "Estimated Loan Repayment" : "Projected Savings Growth"}
+          {isLoan ? t.totalRepayment : t.totalSavingsBalance}
         </h4>
 
         {isLoan ? (
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 text-center">
             <div className="bg-[#120e0a]/80 p-3 rounded-xl border border-white/5">
-              <p className="text-[11px] text-gray-400">Monthly Payment</p>
+              <p className="text-[11px] text-gray-400">{t.monthlyPayment}</p>
               <p className="text-lg sm:text-xl font-extrabold text-[var(--t-primary)] mt-0.5">
                 ${monthlyPayment.toFixed(2)}
               </p>
             </div>
             <div className="bg-[#120e0a]/80 p-3 rounded-xl border border-white/5">
-              <p className="text-[11px] text-gray-400">Total Interest Paid</p>
+              <p className="text-[11px] text-gray-400">{t.totalInterest}</p>
               <p className="text-lg sm:text-xl font-extrabold text-amber-400 mt-0.5">
                 ${totalInterest.toFixed(2)}
               </p>
             </div>
             <div className="bg-[#120e0a]/80 p-3 rounded-xl border border-white/5">
-              <p className="text-[11px] text-gray-400">Total Repayment</p>
+              <p className="text-[11px] text-gray-400">{t.totalRepayment}</p>
               <p className="text-lg sm:text-xl font-extrabold text-white mt-0.5">
                 ${totalBalance.toFixed(2)}
               </p>
@@ -414,13 +428,13 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
               </p>
             </div>
             <div className="bg-[#120e0a]/80 p-3 rounded-xl border border-white/5">
-              <p className="text-[11px] text-gray-400">Interest Earned</p>
+              <p className="text-[11px] text-gray-400">{t.totalInterest}</p>
               <p className="text-lg sm:text-xl font-extrabold text-[var(--t-primary)] mt-0.5">
                 +${totalInterest.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
             </div>
             <div className="bg-[#120e0a]/80 p-3 rounded-xl border border-white/5">
-              <p className="text-[11px] text-gray-400">Final Balance</p>
+              <p className="text-[11px] text-gray-400">{t.totalSavingsBalance}</p>
               <p className="text-lg sm:text-xl font-extrabold text-white mt-0.5">
                 ${totalBalance.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
               </p>
@@ -454,7 +468,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
           className="w-full sm:w-auto flex-1 px-4 py-3 rounded-xl bg-gradient-to-r from-[var(--t-primary)] to-[var(--t-secondary)] text-[#0a0806] font-extrabold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg hover:brightness-110 active:scale-[0.98] transition-all cursor-pointer"
         >
           <Sparkles className="w-4 h-4 shrink-0" />
-          <span>Discuss Calculation with CUB AI</span>
+          <span>{t.askAvaAboutCalc}</span>
           <ArrowRight className="w-4 h-4 shrink-0" />
         </button>
 
@@ -465,12 +479,12 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
           {copied ? (
             <>
               <Check className="w-4 h-4 text-green-400" />
-              <span>Copied!</span>
+              <span>{t.copied}</span>
             </>
           ) : (
             <>
               <Copy className="w-4 h-4 text-gray-400" />
-              <span>Copy Summary</span>
+              <span>{t.copy}</span>
             </>
           )}
         </button>
@@ -480,7 +494,7 @@ export const InterestCalculator: React.FC<InterestCalculatorProps> = ({
             onClick={onClose}
             className="w-full sm:w-auto px-4 py-3 rounded-xl bg-red-500/10 hover:bg-red-500/20 text-red-300 border border-red-500/30 text-xs font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
           >
-            <span>Exit Calculator</span>
+            <span>{t.close}</span>
             <span>✕</span>
           </button>
         )}

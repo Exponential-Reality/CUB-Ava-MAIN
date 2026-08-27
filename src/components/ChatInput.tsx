@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
-import { QUICK_PILLS } from "../data/bankData";
-import { Send, Volume2, VolumeX, Mic, MicOff, Calculator, Clock, FileText, Landmark, Sparkles } from "lucide-react";
-import { speakText, stopSpeech, isSpeaking as checkIsSpeaking } from "../utils/speech";
+import { Send, Volume2, VolumeX, Mic, MicOff, Calculator, Clock, FileText, Landmark, Lock, User } from "lucide-react";
+import { speakText, stopSpeech, isSpeaking as checkIsSpeaking, getBCP47LanguageCode } from "../utils/speech";
 import { getTranslation } from "../utils/i18n";
 
 interface ChatInputProps {
@@ -10,7 +9,10 @@ interface ChatInputProps {
   lastAssistantMessage?: string;
   draftInputPrompt?: string;
   onClearDraftPrompt?: () => void;
+  onOpenCalculator?: () => void;
   language?: string;
+  loggedInUser?: string | null;
+  onOpenLoginModal?: () => void;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -19,7 +21,10 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   lastAssistantMessage,
   draftInputPrompt,
   onClearDraftPrompt,
+  onOpenCalculator,
   language = "en",
+  loggedInUser,
+  onOpenLoginModal,
 }) => {
   const [input, setInput] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -87,13 +92,17 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     const textToSpeak =
       input.trim() ||
       lastAssistantMessage ||
-      "Hello! What do you need help with today? Whether you're checking interest rates, looking into loan options, or need branch hours, I'm right here to walk you through it!";
+      t.welcomeMessage;
 
-    speakText(textToSpeak, {
-      onStart: () => setIsSpeaking(true),
-      onEnd: () => setIsSpeaking(false),
-      onError: () => setIsSpeaking(false),
-    });
+    speakText(
+      textToSpeak,
+      {
+        onStart: () => setIsSpeaking(true),
+        onEnd: () => setIsSpeaking(false),
+        onError: () => setIsSpeaking(false),
+      },
+      language
+    );
   };
 
   const handleVoiceInput = () => {
@@ -124,7 +133,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
       const recognition = new SpeechRecognition();
       recognition.continuous = false;
       recognition.interimResults = true;
-      recognition.lang = "en-US";
+      recognition.lang = getBCP47LanguageCode(language);
 
       recognition.onstart = () => {
         setIsListening(true);
@@ -155,16 +164,61 @@ export const ChatInput: React.FC<ChatInputProps> = ({
     }
   };
 
-  const getPillIcon = (label: string) => {
-    if (label.includes("Rates") || label.includes("Calculator")) return <Calculator className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />;
-    if (label.includes("Hours")) return <Clock className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />;
-    if (label.includes("Documents")) return <FileText className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />;
-    if (label.includes("Loan")) return <Landmark className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />;
-    return <Sparkles className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />;
-  };
+  const localizedPills = [
+    {
+      id: "rates",
+      label: t.pillMortgage,
+      prompt: t.pillMortgagePrompt,
+      icon: <Calculator className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />,
+      isCalc: false,
+    },
+    {
+      id: "docs",
+      label: t.pillDocuments,
+      prompt: t.pillDocumentsPrompt,
+      icon: <FileText className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />,
+      isCalc: false,
+    },
+    {
+      id: "hours",
+      label: t.pillHours,
+      prompt: t.pillHoursPrompt,
+      icon: <Clock className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />,
+      isCalc: false,
+    },
+    {
+      id: "calc",
+      label: t.pillCalculator,
+      prompt: t.pillCalculatorPrompt,
+      icon: <Landmark className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />,
+      isCalc: true,
+    },
+  ];
 
   return (
-    <div className="space-y-3 mt-3">
+    <div className="space-y-3 mt-3 relative">
+      {!loggedInUser && (
+        <div className="absolute inset-0 z-20 backdrop-blur-md bg-black/80 rounded-3xl border border-[var(--t-primary)]/40 flex flex-col items-center justify-center p-6 text-center animate-fadeIn shadow-2xl">
+          <div className="w-12 h-12 rounded-2xl bg-[var(--t-primary)]/20 border border-[var(--t-primary)]/50 flex items-center justify-center mb-3 text-[var(--t-primary)] shadow-[var(--t-glow)]">
+            <Lock className="w-5 h-5" />
+          </div>
+          <h3 className="text-base font-extrabold font-['Sora'] text-white mb-1">
+            Secure Banking Login Required
+          </h3>
+          <p className="text-xs text-gray-300 max-w-sm mb-4">
+            Please sign in to your CUB secure account to chat with Ava, check account details, or use banking assistants.
+          </p>
+          <div className="flex flex-wrap items-center justify-center gap-2.5">
+            <button
+              onClick={onOpenLoginModal}
+              className="px-5 py-2.5 rounded-xl bg-[var(--t-primary)] text-[#0a0806] font-extrabold text-xs hover:opacity-95 transition-all cursor-pointer shadow-lg shadow-[var(--t-glow)] flex items-center gap-2"
+            >
+              <User className="w-4 h-4" /> Sign In / Demo Login
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* Input Form Bar */}
       <form
         onSubmit={handleSubmit}
@@ -177,7 +231,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
           onChange={(e) => setInput(e.target.value)}
           placeholder={
             isListening
-              ? "Listening... speak now..."
+              ? t.listeningNow
               : voiceError || t.inputPlaceholder
           }
           disabled={isLoading}
@@ -188,7 +242,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         <button
           type="button"
           onClick={handleVoiceInput}
-          title={isListening ? "Listening... click to stop" : "Speak your message"}
+          title={isListening ? t.micStopTooltip : t.micTooltip}
           className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
             isListening
               ? "bg-red-500 text-white animate-pulse shadow-lg scale-105"
@@ -202,7 +256,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         <button
           type="button"
           onClick={handleTextToSpeech}
-          title={isSpeaking ? "Stop speaking" : "Text to Speech (Read out message)"}
+          title={isSpeaking ? t.stop : t.speakTooltip}
           className={`w-9 h-9 rounded-full flex items-center justify-center transition-all cursor-pointer ${
             isSpeaking
               ? "bg-[var(--t-primary)] text-[#0a0806] font-bold animate-pulse shadow-lg scale-105"
@@ -216,7 +270,7 @@ export const ChatInput: React.FC<ChatInputProps> = ({
         <button
           type="submit"
           disabled={!input.trim() || isLoading}
-          title="Send message"
+          title={t.send}
           className="w-10 h-10 min-w-10 rounded-full bg-gradient-to-br from-[var(--t-primary)] to-[var(--t-secondary)] text-[#0a0806] font-extrabold flex items-center justify-center hover:scale-105 active:scale-95 disabled:opacity-40 disabled:hover:scale-100 transition-all shadow-md cursor-pointer"
         >
           <Send className="w-4 h-4 ml-0.5" />
@@ -225,23 +279,31 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
       {/* Quick Suggestion Chips */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-        {QUICK_PILLS.map((pill) => (
-          <button
-            key={pill.label}
-            onClick={() => onSendMessage(pill.prompt)}
-            disabled={isLoading}
-            className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-full bg-white/5 border border-[var(--line)] text-xs font-semibold text-[var(--text-soft)] hover:bg-white/10 hover:border-[var(--t-primary)] hover:text-white transition-all text-center hover:-translate-y-0.5 cursor-pointer shadow-sm"
-          >
-            {getPillIcon(pill.label)}
-            <span className="truncate">{pill.label}</span>
-          </button>
-        ))}
+        {localizedPills.map((pill) => {
+          return (
+            <button
+              key={pill.id}
+              onClick={() => {
+                if (pill.isCalc && onOpenCalculator) {
+                  onOpenCalculator();
+                } else {
+                  onSendMessage(pill.prompt);
+                }
+              }}
+              disabled={isLoading}
+              className="flex items-center justify-center gap-1.5 py-2 px-3 rounded-full bg-white/5 border border-[var(--line)] text-xs font-semibold text-[var(--text-soft)] hover:bg-white/10 hover:border-[var(--t-primary)] hover:text-white transition-all text-center hover:-translate-y-0.5 cursor-pointer shadow-sm truncate"
+              title={pill.prompt}
+            >
+              {pill.icon}
+              <span className="truncate">{pill.label}</span>
+            </button>
+          );
+        })}
       </div>
 
       <div className="footer-tagline text-center text-[10px] uppercase tracking-widest text-[var(--t-primary)] font-bold opacity-60">
-        Secure • Reliable • Together
+        {t.tagline}
       </div>
     </div>
   );
 };
-

@@ -8,7 +8,8 @@ import { ChatInput } from "./components/ChatInput";
 import { InterestCalculator } from "./components/InterestCalculator";
 import { BackgroundAnimation } from "./components/BackgroundAnimation";
 import { SqliteInspectorModal } from "./components/SqliteInspectorModal";
-import { stopSpeech } from "./utils/speech";
+import { LoginModal } from "./components/LoginModal";
+import { stopSpeech, getStoredVoiceId, setStoredVoiceId } from "./utils/speech";
 import { getTranslation } from "./utils/i18n";
 
 const STORAGE_KEY_SESSIONS = "cub_chat_sessions_v2";
@@ -16,6 +17,7 @@ const STORAGE_KEY_ACTIVE_ID = "cub_active_session_id_v2";
 const STORAGE_KEY_THEME = "cub_theme_v2";
 const STORAGE_KEY_ANIM_MODE = "cub_anim_mode_v2";
 const STORAGE_KEY_LANG = "cub_language_v2";
+const STORAGE_KEY_USER = "cub_logged_in_user_v2";
 
 const createDefaultSession = (lang = "en"): ChatSession => {
   const t = getTranslation(lang);
@@ -31,6 +33,7 @@ const createDefaultSession = (lang = "en"): ChatSession => {
         role: "assistant",
         content: t.welcomeMessage,
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
+        animated: true,
       },
     ],
   };
@@ -112,11 +115,57 @@ export const App: React.FC = () => {
     return "en";
   });
 
+  // Persisted Voice Persona State (Default: Jessica - Friendly & Clear)
+  const [voiceId, setVoiceId] = useState<string>(() => getStoredVoiceId());
+
+  const handleSelectVoice = (newVoiceId: string) => {
+    stopSpeech();
+    setVoiceId(newVoiceId);
+    setStoredVoiceId(newVoiceId);
+  };
+
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const [isOpenMobile, setIsOpenMobile] = useState<boolean>(false);
   const [isCalcOpen, setIsCalcOpen] = useState<boolean>(false);
   const [isSqliteModalOpen, setIsSqliteModalOpen] = useState<boolean>(false);
   const [draftInputPrompt, setDraftInputPrompt] = useState<string>("");
+  const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const [loggedInUser, setLoggedInUser] = useState<string | null>(() => {
+    try {
+      return localStorage.getItem(STORAGE_KEY_USER);
+    } catch (e) {
+      return null;
+    }
+  });
+
+  const handleLoginSuccess = (username: string) => {
+    setLoggedInUser(username);
+    try {
+      localStorage.setItem(STORAGE_KEY_USER, username);
+    } catch (e) {}
+  };
+
+  const handleLogout = () => {
+    setLoggedInUser(null);
+    try {
+      localStorage.removeItem(STORAGE_KEY_USER);
+    } catch (e) {}
+  };
+
+  // Hidden developer shortcut to inspect SQLite DB (Ctrl+Shift+S or ?sqlite=1) without cluttering the menu
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === "S" || e.key === "s")) {
+        e.preventDefault();
+        setIsSqliteModalOpen((prev) => !prev);
+      }
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    if (typeof window !== "undefined" && window.location.search.includes("sqlite")) {
+      setIsSqliteModalOpen(true);
+    }
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, []);
 
   // Initialize Chat Sessions from LocalStorage or Default
   const [sessions, setSessions] = useState<ChatSession[]>(() => {
@@ -169,6 +218,7 @@ export const App: React.FC = () => {
   }, [language]);
 
   const handleSelectLanguage = (newLang: string) => {
+    stopSpeech();
     setLanguage(newLang);
     const t = getTranslation(newLang);
     setSessions((prev) =>
@@ -223,18 +273,17 @@ export const App: React.FC = () => {
   };
 
   const handleDeleteSession = (sessionId: string) => {
-    stopSpeech();
     setSessions((prev) => {
-      const remaining = prev.filter((s) => s.id !== sessionId);
-      if (remaining.length === 0) {
+      const filtered = prev.filter((s) => s.id !== sessionId);
+      if (filtered.length === 0) {
         const fresh = createDefaultSession(language);
         setActiveSessionId(fresh.id);
         return [fresh];
       }
       if (activeSessionId === sessionId) {
-        setActiveSessionId(remaining[0].id);
+        setActiveSessionId(filtered[0].id);
       }
-      return remaining;
+      return filtered;
     });
   };
 
@@ -369,13 +418,13 @@ export const App: React.FC = () => {
     }
   };
 
-  const handleMessageAnimated = (messageId: string) => {
+  const handleMessageAnimated = (id: string) => {
     setSessions((prev) =>
       prev.map((s) =>
         s.id === activeSessionId
           ? {
               ...s,
-              messages: s.messages.map((m) => (m.id === messageId ? { ...m, animated: true } : m)),
+              messages: s.messages.map((m) => (m.id === id ? { ...m, animated: true } : m)),
             }
           : s
       )
@@ -401,7 +450,6 @@ export const App: React.FC = () => {
         onSelectNavPrompt={handleSendMessage}
         onNewChat={handleNewChat}
         onOpenCalculator={() => setIsCalcOpen(true)}
-        onOpenSqliteModal={() => setIsSqliteModalOpen(true)}
         isOpenMobile={isOpenMobile}
         onCloseMobile={() => setIsOpenMobile(false)}
         sessions={sessions}
@@ -410,6 +458,11 @@ export const App: React.FC = () => {
         onDeleteSession={handleDeleteSession}
         language={language}
         onSelectLanguage={handleSelectLanguage}
+        voiceId={voiceId}
+        onSelectVoice={handleSelectVoice}
+        loggedInUser={loggedInUser}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* Main Content Area (Default 4K Ultra HD Layout) */}
@@ -417,8 +470,10 @@ export const App: React.FC = () => {
         <div className="mx-auto px-4 py-6 sm:px-6 3xl:px-12 3xl:py-10 max-w-[1920px] 2xl:max-w-[2200px] transition-all duration-300 space-y-4">
           <Header
             onOpenMobile={() => setIsOpenMobile(true)}
-            onOpenSqliteModal={() => setIsSqliteModalOpen(true)}
             language={language}
+            loggedInUser={loggedInUser}
+            onOpenLoginModal={() => setIsLoginModalOpen(true)}
+            onLogout={handleLogout}
           />
 
           <ChatWindow
@@ -428,6 +483,8 @@ export const App: React.FC = () => {
             onSendMessage={handleSendMessage}
             onSelectPromptDraft={(prompt) => setDraftInputPrompt(prompt)}
             onMessageAnimated={handleMessageAnimated}
+            language={language}
+            voiceId={voiceId}
           />
 
           <ChatInput
@@ -438,10 +495,21 @@ export const App: React.FC = () => {
             }
             draftInputPrompt={draftInputPrompt}
             onClearDraftPrompt={() => setDraftInputPrompt("")}
+            onOpenCalculator={() => setIsCalcOpen(true)}
             language={language}
+            loggedInUser={loggedInUser}
+            onOpenLoginModal={() => setIsLoginModalOpen(true)}
           />
         </div>
       </main>
+
+      {/* Login Modal */}
+      <LoginModal
+        isOpen={isLoginModalOpen}
+        onClose={() => setIsLoginModalOpen(false)}
+        onLoginSuccess={handleLoginSuccess}
+        language={language}
+      />
 
       {/* CUB Calculator Modal */}
       {isCalcOpen && (
@@ -449,10 +517,11 @@ export const App: React.FC = () => {
           isModal={true}
           onClose={() => setIsCalcOpen(false)}
           onAskAi={handleSendMessage}
+          language={language}
         />
       )}
 
-      {/* SQLite Database & OpenAPI Inspector Modal */}
+      {/* SQLite Database Inspector (Available via Ctrl+Shift+S or ?sqlite=true; kept completely off the UI menu) */}
       <SqliteInspectorModal
         isOpen={isSqliteModalOpen}
         onClose={() => setIsSqliteModalOpen(false)}

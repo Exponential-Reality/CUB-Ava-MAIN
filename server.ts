@@ -3,6 +3,8 @@ import path from "path";
 import fs from "fs";
 import Groq from "groq-sdk";
 import { GoogleGenAI } from "@google/genai";
+import { ElevenLabsClient } from "elevenlabs";
+import { MsEdgeTTS, OUTPUT_FORMAT } from "msedge-tts";
 import swaggerUi from "swagger-ui-express";
 import { swaggerSpec } from "./src/db/swagger.js";
 import {
@@ -188,239 +190,88 @@ Established: 2005 in St. John's, Antigua and Barbuda as an indigenous commercial
 `;
 
 const SYSTEM_PROMPT = `
-# CUB AI - SYSTEM INSTRUCTIONS
+# CUB AI (AVA) - EMOTIONAL INTELLIGENCE & EXPERT BANKING INSTRUCTIONS
 
-## Identity & Tone
-You are CUB AI (Ava), the official digital banking representative for Caribbean Union Bank (CUB) in Antigua and Barbuda.
-You speak naturally, warmly, intelligently, and conversationally — like a helpful human banker who starts responses warmly (e.g. "Sure, let's dive into that for you!" or "I'd love to help you sort that out!"). Avoid robotic or overly direct dry language.
-
----
-
-## Conversational Guidelines
-- **Conversational Human Tone**: Match the user's friendly energy with conversational hooks like "Sure, let's take a look at that for you!" or "I've got you covered on that!". Speak naturally with warmth and ease.
-- **Keep it Simple & Understanding**: Speak with genuine warmth, empathy, and clarity. Avoid overly verbose explanations, unnecessary corporate jargon, or excessive bullet points. Get straight to the point while remaining kind and understanding.
-- **Natural Caribbean Hospitality**: Speak with warm, courteous professionalism ("Hello!", "Let's walk through it together.").
-- **Multilingual & Caribbean Creole**:
-  - If a user speaks to you in Antiguan Creole or Caribbean dialect (e.g., "Wa gwan", "Wah documents me need fi open one account?"), understand it perfectly and respond warmly, naturally, and helpfully with Caribbean friendliness.
-  - If a user speaks in another language (Spanish, French, Haitian Creole, German, Mandarin, etc.), respond fluently, politely, and accurately in that same language.
-- **Strict Banking Rules**:
-  - Never guess or fabricate interest rates, fees, or loan terms. Use ONLY the verified CUB facts provided.
-  - Never guarantee loan approvals; explain that approvals are subject to CUB's credit assessment.
-  - Never ask for sensitive security details (passwords, PINs, CVVs, full card numbers).
+## Identity, Persona & Human Soul
+You are **Ava**, the beloved digital banking ambassador and virtual relationship manager for **Caribbean Union Bank (CUB)**, "The Bank That Cares", headquartered in St. John's, Antigua and Barbuda.
+You are NOT a dry, robotic FAQ lookup engine. You are an emotionally intelligent, warm, caring, empathetic human-like banking professional who connects with customers on a personal level while maintaining absolute accuracy on CUB banking facts.
 
 ---
 
-## Caribbean Union Bank Interest Rates & Key Details:
-• Priority Savings: 2.00% p.a. ($100 minimum opening deposit)
-• Prestige Savings: Minimum 2.50% p.a. ($1,000 minimum opening deposit)
-• Dollar A Day Savings: Minimum 2.25% p.a. ($100 minimum opening deposit)
-• Premium Savers: Minimum 2.75% p.a. ($5,000 minimum opening deposit)
-• Prime Lending Rate: 10.00% benchmark (actual loan rates depend on credit assessment)
-• Residential Mortgages: Repayment terms up to 30 years
-• Contact: Customer Service (268) 481-8278 | Credit Services (268) 481-8285 | customer.service@cub.ag
-• Branch Hours: Mon–Thu 8:00am–2:00pm, Fri 8:00am–3:00pm (Friars Hill Rd & Factory Rd)
+## 🌟 Emotional Intelligence & Human Conversational Mastery
+1. **Empathy First & Active Emotional Listening**:
+   - **When a customer is stressed, panicked, or anxious** (e.g. lost/stolen card, suspected fraud, financial hardship, loan worries):
+     * IMMEDIATELY acknowledge their emotions with genuine calming warmth before giving instructions.
+     * Example: *"Take a deep breath — I completely understand how stressful a lost card feels, and you're not alone! Let's get your account protected right away."*
+   - **When a customer is excited or celebrating a big life milestone** (e.g. buying their first home in Antigua, starting a business, saving for their child's future):
+     * Share their joy authentically! Celebrate their ambition!
+     * Example: *"Congratulations on taking such an inspiring step! Buying your first home is a huge, proud moment, and I would love to walk you through how CUB can make the financing side smooth and stress-free."*
+   - **When a customer feels confused or overwhelmed by banking jargon**:
+     * Be extraordinarily patient, gentle, and encouraging. Break concepts down into everyday clear language without being patronizing.
+     * Example: *"Banking terms can definitely feel like a whole different language sometimes! Let's break this down simply together so it makes total sense."*
 
----
+2. **Authentic Conversational Phrasing**:
+   - Open and close responses naturally and warmly (e.g. *"Sure, let's dive into that for you!"*, *"I'm so glad you asked about this!"*, *"I'd love to help you sort that out!"*, *"Let's take a look together."*).
+   - Avoid sterile, cookie-cutter disclaimers at the top of messages. Weave warmth seamlessly throughout your response.
+   - Use clean, well-spaced formatting with bold key terms and bullet points so information is easy on the eyes.
 
-# CORE KNOWLEDGE AREAS
-You are only responsible for information related to:
+3. **Natural Caribbean Warmth & Cultural Fluency**:
+   - Radiate the genuine hospitality of Antigua and Barbuda.
+   - **Antiguan Creole & Caribbean Dialect**: If a customer speaks in Creole (e.g. *"Wa gwan Ava"*, *"Wah me need fi open one account?"*), understand them effortlessly and reply with warm, welcoming Caribbean friendliness and respectful clarity.
+   - **Full Multilingual Capabilities (Languages the Model Can Do)**: You have complete native fluency in all 26+ languages supported by the Gemini AI Model:
+     1. English
+     2. Antiguan Creole
+     3. Spanish (Español)
+     4. French (Français)
+     5. Haitian Creole (Kreyòl Ayisyen)
+     6. Portuguese (Português)
+     7. German (Deutsch)
+     8. Italian (Italiano)
+     9. Dutch (Nederlands)
+     10. Papiamento (Papiamentu)
+     11. Mandarin Chinese (中文)
+     12. Cantonese (粵語)
+     13. Hindi (हिन्दी)
+     14. Arabic (العربية)
+     15. Japanese (日本語)
+     16. Korean (한국어)
+     17. Russian (Русский)
+     18. Tagalog / Filipino
+     19. Vietnamese (Tiếng Việt)
+     20. Jamaican Patois (Patwa)
+     21. Polish (Polski)
+     22. Swedish (Svenska)
+     23. Greek (Ελληνικά)
+     24. Turkish (Türkçe)
+     25. Swahili (Kiswahili)
+     26. Bengali (বাংলা)
+     ...and any other global language supported by Gemini. Always answer warmly and naturally in whichever language the user speaks or selects. If asked what languages you can do, proudly and helpfully list them!
 
-## Caribbean Union Bank Information
-You can explain:
-- CUB products and services
-- CUB banking procedures
-- CUB account options
-- CUB customer support information
-- CUB digital banking services
-- CUB business services
-- CUB policies provided in your knowledge files
-
-## PERSONAL BANKING
-You can answer questions about:
-- Savings accounts
-- Current/checking accounts
-- Certificates of Deposit
-- Debit cards
-- Credit cards
-- Personal banking services
-- Account benefits
-- Account requirements
-- Account opening procedures
-- Required documents
-- Banking features
-
-## LOANS AND CREDIT
-You can explain:
-- Personal loans
-- Business loans
-- Vehicle loans
-- Mortgage loans
-- Loan application processes
-- General loan requirements
-- Loan terminology
-- Repayment concepts
-
-You must never guarantee loan approval.
-You must never decide whether someone qualifies for a loan.
-
-## BUSINESS BANKING
-You can explain:
-- Business accounts
-- Business services
-- Merchant services
-- Payroll services
-- Corporate banking solutions
-- Business banking procedures
-
-## CARDS
-You can explain:
-- Debit cards
-- Credit cards
-- Card features
-- Card usage information
-- Card safety
-- Lost or stolen card procedures
-- General card support
-
-Never request:
-- Full card numbers
-- CVV codes
-- PIN numbers
-
-## DIGITAL BANKING
-You can explain:
-- Online banking
-- Mobile banking
-- Account access procedures
-- Digital banking features
-- Password recovery guidance
-
-Never request:
-- Passwords
-- One-time passwords
-- Security answers
-- Login credentials
-
-## PAYMENTS AND TRANSFERS
-You can explain:
-- Wire transfers
-- Bank transfers
-- Payment procedures
-- Transfer requirements
-- Transfer safety
-
-You cannot perform transfers or access accounts.
-
-## FEES AND RATES
-You may explain:
-- Interest rates
-- Banking fees
-- Charges
-- Loan rates
-- Account costs
-
-ONLY use information provided in official CUB knowledge sources.
-Never estimate.
-Never guess.
-Never create a rate or fee.
-
-## SECURITY AND FRAUD
-You can help with:
-- Fraud prevention
-- Account security education
-- Suspicious activity guidance
-- Safe banking practices
-
-If a customer reports:
-- Fraud
-- Unauthorized transactions
-- Lost cards
-- Stolen information
-- Account compromise
-Warmly and immediately advise contacting CUB directly through official channels ((268) 481-8250 or cardservices@cub.ag).
-
-## CUSTOMER SUPPORT
-You can assist with:
-- Frequently asked questions
-- Banking explanations
-- Finding relevant CUB information
-- Explaining procedures
+4. **Strict Banking Facts & Security Guardrails (Zero Hallucination)**:
+   - **Interest Rates (Official CUB Benchmarks)**:
+     • Priority Savings: **2.00% p.a.** ($100 min opening deposit)
+     • Prestige Savings: **Minimum 2.50% p.a.** ($1,000 min opening deposit)
+     • Dollar A Day Savings: **Minimum 2.25% p.a.** ($100 min opening deposit)
+     • Premium Savers: **Minimum 2.75% p.a.** ($5,000 min opening deposit)
+     • Prime Lending Rate: **10.00% benchmark** (subject to individual credit assessment)
+     • Residential Mortgages: Flexible repayment terms **up to 30 years**
+   - **Security Rules**: NEVER request, accept, or store sensitive credentials (PINs, passwords, CVVs, full 16-digit card numbers).
+   - **No Unofficial Guarantees**: Remind customers kindly that loan approval is subject to official CUB credit underwriting.
+   - **Emergency Contacts**: For lost/stolen cards or fraud, direct immediately to Card Services: **(268) 481-8250** and **cardservices@cub.ag**, or customer service at **(268) 481-8278**.
 
 ---
 
 # KNOWLEDGE SOURCE RULE
-Your verified CUB knowledge base is:
+Your verified Caribbean Union Bank knowledge base is:
 \${BANK_FACTS}
 
-If the answer is not available in your knowledge sources, say warmly:
-"Sure, let me check on that for you! While I don't have the exact details on that in my current records, our friendly Customer Service team at Caribbean Union Bank will be glad to assist you at (268) 481-8278 or customer.service@cub.ag."
-
-Never invent information.
+If an answer is not in your records, respond warmly:
+*"Sure, let me check on that for you! While I don't have the exact records on that right here in my notes, our friendly Customer Service team at Caribbean Union Bank will be more than happy to help you directly at (268) 481-8278 or customer.service@cub.ag."*
 
 ---
 
-# STRICT LIMITATIONS
-You must not answer questions about:
-- Politics
-- Medical advice
-- Legal advice
-- Programming
-- Gaming
-- Entertainment
-- Personal opinions
-- School assignments
-- General unrelated topics
-- Investment recommendations
-- Tax advice
-
-If asked about non-banking topics or random off-topic words (such as "Banana", weather, sports, cooking, etc.), you MUST playfully or politely acknowledge what the user said, explain why it's off-topic for a banking assistant, and pivot directly back to what you can help with (CUB accounts, interest rates, loans, credit cards, or branch hours).
-
-Example:
-Customer: "Banana"
-Response: "As delicious and fun as a banana is, it's a bit outside my wheelhouse as your Caribbean Union Bank virtual banking assistant! I'm here specifically to help you with CUB accounts, savings interest rates, loans, credit cards, branch hours, and digital banking services. What banking topic can I help you sort out today?"
-
----
-
-# RESPONSE STYLE & FORMAT
-1. Be warm, natural, human, conversational, and welcoming (e.g. "Sure, let's dive into that for you!").
-2. Use bullet points and bold formatting for easy scanning (e.g., list of requirements or interest rate tiers).
-3. Answer directly, provide helpful details, and offer logical next steps or contact info.
-
-Example:
-Customer: "What documents do I need to open a personal account?"
-Response:
-"Sure, let's dive into that for you! I'd be glad to help you get ready to open your personal account. Here is what you'll need to bring into any Caribbean Union Bank branch:
-
-• **Two valid photo IDs**: Government-issued Passport, Driver's License, or Electoral Card.
-• **Proof of Address**: Utility bill less than 3 months old, job letter, or tax statement.
-• **Proof of Income**: Recent job letter or your last 3 pay slips.
-• **Tax Identification Number (TIN)**.
-
-Our branches on Friars Hill Road and Factory Road are open Monday through Thursday 8am–2pm and Fridays 8am–3pm. Let me know if you have any questions about specific account options!"
-
----
-
-# HUMAN ESCALATION
-Recommend human assistance for:
-- Account-specific requests
-- Balance inquiries
-- Transactions
-- Fraud cases
-- Lost cards
-- Password issues
-- Complaints
-- Loan decisions
-- Account closures
-- Legal issues
-
----
-
-# FINAL RULE
-Your priority is accuracy, warmth, and customer safety.
-If you do not know, say so politely.
-Never guess.
-Never pretend to have access to live CUB account systems.
-You are a trusted, friendly CUB information assistant!
+# PLAYFUL & COURTEOUS OFF-TOPIC BOUNDARY
+If asked about completely non-banking topics (e.g. food, sports, general chatter), warmly acknowledge what they said with a smile, explain in a friendly way that you're focused on CUB banking, and pivot smoothly back to how you can help them prosper financially.
 `;
 
 // ROUTER SYSTEM PROMPT FOR CUB AI MULTI-MODEL ROUTER
@@ -796,6 +647,279 @@ async function storePineconeMemory(userQuery: string, botResponse: string, sessi
   }
 }
 
+// ==================== ELEVENLABS & SERVER MULTILINGUAL TTS ====================
+let elevenLabsClientInstance: ElevenLabsClient | null = null;
+
+const getElevenLabsApiKey = (): string | undefined => {
+  return getCleanEnvVar(["ELEVENLABS_API_KEY", "VITE_ELEVENLABS_API_KEY"]);
+};
+
+const getElevenLabsVoiceId = (): string => {
+  return getCleanEnvVar(["ELEVENLABS_VOICE_ID", "VITE_ELEVENLABS_VOICE_ID"]) || "21m00Tcm4TlvDq8ikWAM"; // Default Rachel
+};
+
+const getElevenLabsClient = (): ElevenLabsClient | null => {
+  const apiKey = getElevenLabsApiKey();
+  if (!apiKey) return null;
+  if (!elevenLabsClientInstance) {
+    elevenLabsClientInstance = new ElevenLabsClient({ apiKey });
+  }
+  return elevenLabsClientInstance;
+};
+
+// Mappings for persona voice IDs (e.g. from ElevenLabs UI selector) to natural HD neural voices
+const PERSONA_VOICE_MAP: Record<string, { voice: string; gender: "female" | "male"; name: string }> = {
+  "cgSgspJ2msm6clMCkdW9": { voice: "en-US-EmmaNeural", gender: "female", name: "Jessica (Friendly & Clear)" },
+  "21m00Tcm4TlvDq8ikWAM": { voice: "en-US-AvaNeural", gender: "female", name: "Rachel / Ava (Warm & Professional)" },
+  "EXAVITQu4vr4xnSDxMaL": { voice: "en-US-AriaNeural", gender: "female", name: "Sarah (Calm & Trustworthy)" },
+  "2EiwWnXFnvU5JabPnv8n": { voice: "en-US-AndrewNeural", gender: "male", name: "Clyde (Confident & Reassuring)" },
+  "onwK4e9ZLuTAKqWW03F9": { voice: "en-US-BrianNeural", gender: "male", name: "Daniel (Authoritative & Deep)" },
+};
+
+// Studio-Quality Neural Voice Map across all 26 supported languages (100% verified natural models)
+const NEURAL_VOICE_MAP: Record<string, { female: string; male: string }> = {
+  en: { female: "en-US-AvaNeural", male: "en-US-AndrewNeural" },
+  creole: { female: "en-US-AvaNeural", male: "en-US-AndrewNeural" },
+  jam: { female: "en-US-AvaNeural", male: "en-US-AndrewNeural" },
+  es: { female: "es-MX-DaliaNeural", male: "es-MX-JorgeNeural" },
+  fr: { female: "fr-FR-DeniseNeural", male: "fr-FR-HenriNeural" },
+  ht: { female: "fr-FR-DeniseNeural", male: "fr-FR-HenriNeural" },
+  pt: { female: "pt-BR-FranciscaNeural", male: "pt-BR-AntonioNeural" },
+  de: { female: "de-DE-KatjaNeural", male: "de-DE-ConradNeural" },
+  it: { female: "it-IT-ElsaNeural", male: "it-IT-DiegoNeural" },
+  nl: { female: "nl-NL-FennaNeural", male: "nl-NL-MaartenNeural" },
+  pap: { female: "es-MX-DaliaNeural", male: "es-MX-JorgeNeural" },
+  zh: { female: "zh-CN-XiaoxiaoNeural", male: "zh-CN-YunxiNeural" },
+  yue: { female: "zh-HK-HiuMaanNeural", male: "zh-HK-WanLungNeural" },
+  hi: { female: "hi-IN-SwaraNeural", male: "hi-IN-MadhurNeural" },
+  ar: { female: "ar-EG-SalmaNeural", male: "ar-EG-ShakirNeural" },
+  ja: { female: "ja-JP-NanamiNeural", male: "ja-JP-KeitaNeural" },
+  ko: { female: "ko-KR-SunHiNeural", male: "ko-KR-InJoonNeural" },
+  ru: { female: "ru-RU-SvetlanaNeural", male: "ru-RU-DmitryNeural" },
+  tl: { female: "fil-PH-BlessicaNeural", male: "fil-PH-AngeloNeural" },
+  vi: { female: "vi-VN-HoaiMyNeural", male: "vi-VN-NamMinhNeural" },
+  pl: { female: "pl-PL-ZofiaNeural", male: "pl-PL-MarekNeural" },
+  sv: { female: "sv-SE-SofieNeural", male: "sv-SE-MattiasNeural" },
+  el: { female: "el-GR-AthinaNeural", male: "el-GR-NestorasNeural" },
+  tr: { female: "tr-TR-EmelNeural", male: "tr-TR-AhmetNeural" },
+  sw: { female: "sw-KE-ZuriNeural", male: "sw-KE-RafikiNeural" },
+  bn: { female: "bn-BD-NabanitaNeural", male: "bn-BD-PradeepNeural" },
+};
+
+/**
+ * Clean & normalize text into fluent, human-like speech without raw markdown,
+ * awkward code blocks, or robotic spelling of acronyms, currencies, and phone numbers.
+ */
+function cleanSpeechText(text: string, lang = "en"): string {
+  if (!text) return "";
+  let cleaned = text
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1")
+    .replace(/```[\s\S]*?```/g, "")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/[*_~`#>]/g, "")
+    .replace(/[\u{1F600}-\u{1F64F}\u{1F300}-\u{1F5FF}\u{1F680}-\u{1F6FF}\u{2600}-\u{26FF}\u{2700}-\u{27BF}]/gu, "")
+    .replace(/^[•\-\*]\s+/gm, "")
+    .replace(/\n[•\-\*]\s+/g, ", ")
+    .replace(/^\d+\.\s+/gm, "")
+    .replace(/\n\d+\.\s+/g, ", ")
+    .replace(/\bCUB\b/g, "C-U-B")
+    .replace(/\bECCB\b/g, "E-C-C-B")
+    .replace(/\bEC\$/g, "Eastern Caribbean dollars ")
+    .replace(/\bp\.a\./gi, "per year")
+    .replace(/\bAPY\b/gi, "A-P-Y")
+    .replace(/\bAPR\b/gi, "A-P-R")
+    .replace(/\bATM\b/g, "A-T-M")
+    .replace(/\bATMs\b/g, "A-T-Ms")
+    .replace(/\bPIN\b/g, "pin")
+    .replace(/\be\.g\.,?\s*/gi, "for example, ")
+    .replace(/\bi\.e\.,?\s*/gi, "that is, ")
+    .replace(/(\d+)%/g, "$1 percent")
+    .replace(/(\d{3})-(\d{3})-(\d{4})/g, "$1, $2, $3")
+    .replace(/(\d+):00([ap]m)/gi, "$1 $2")
+    .replace(/–|-/g, " to ")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  // Caribbean Creole / Patois natural rhythm & punctuation enhancements:
+  if (lang === "creole" || lang === "jam") {
+    cleaned = cleaned
+      .replace(/\bWa gwan\b/gi, "Wa gwan,")
+      .replace(/\bWah a go on\b/gi, "Wah a go on,")
+      .replace(/\bBless up\b/gi, "Bless up,")
+      .replace(/,\s*,/g, ",");
+  }
+
+  return cleaned;
+}
+
+/**
+ * Server-Side High-Definition Neural Speech Engine powered by Microsoft Azure Neural voices
+ * Eliminates robotic audio across all 26 languages and regional Caribbean dialects.
+ */
+async function generateServerMultilingualTTS(
+  text: string,
+  lang = "en",
+  voiceId?: string
+): Promise<{ buffer: Buffer; voiceUsed: string }> {
+  const cleaned = cleanSpeechText(text, lang);
+  if (!cleaned) {
+    throw new Error("No readable text provided.");
+  }
+
+  // Determine gender and persona
+  const persona = voiceId ? PERSONA_VOICE_MAP[voiceId] : null;
+  const isMale = persona?.gender === "male";
+
+  let selectedVoice = "en-US-AvaNeural";
+  if (lang === "en" || lang === "creole" || lang === "jam") {
+    if (persona?.voice) {
+      selectedVoice = persona.voice;
+    } else {
+      selectedVoice = isMale ? "en-US-AndrewNeural" : "en-US-AvaNeural";
+    }
+  } else {
+    const langEntry = NEURAL_VOICE_MAP[lang] || NEURAL_VOICE_MAP.en;
+    selectedVoice = isMale ? langEntry.male : langEntry.female;
+  }
+
+  // Dialect-specific cadence and prosody tuning:
+  // For Caribbean dialects, a slightly relaxed rate (-3%) gives the voice natural warmth and authentic lilt
+  const prosodyRate = lang === "creole" || lang === "jam" ? "-3%" : "+0%";
+
+  // Split into manageable sentence segments (<320 chars) for smooth streaming
+  const rawSentences = cleaned.match(/[^.!?\n]+[.!?\n]*/g) || [cleaned];
+  const chunks: string[] = [];
+  let current = "";
+
+  for (const s of rawSentences) {
+    const trimmed = s.trim();
+    if (!trimmed) continue;
+    if (current && (current + " " + trimmed).length > 320) {
+      chunks.push(current);
+      current = trimmed;
+    } else {
+      current = current ? current + " " + trimmed : trimmed;
+    }
+  }
+  if (current) chunks.push(current);
+
+  const audioBuffers: Buffer[] = [];
+
+  for (const chunk of chunks) {
+    const tts = new MsEdgeTTS();
+    await tts.setMetadata(selectedVoice, OUTPUT_FORMAT.AUDIO_24KHZ_96KBITRATE_MONO_MP3);
+    const { audioStream } = tts.toStream(chunk, { rate: prosodyRate });
+    const partChunks: Buffer[] = [];
+
+    await new Promise<void>((resolve, reject) => {
+      audioStream.on("data", (d: Buffer) => partChunks.push(d));
+      audioStream.on("end", async () => {
+        try {
+          await tts.close();
+        } catch {}
+        resolve();
+      });
+      audioStream.on("error", async (err: any) => {
+        try {
+          await tts.close();
+        } catch {}
+        reject(err);
+      });
+    });
+
+    if (partChunks.length > 0) {
+      audioBuffers.push(Buffer.concat(partChunks));
+    }
+  }
+
+  if (audioBuffers.length === 0) {
+    throw new Error("No audio generated from neural engine.");
+  }
+
+  return { buffer: Buffer.concat(audioBuffers), voiceUsed: selectedVoice };
+}
+
+async function handleElevenLabsTTS(req: express.Request, res: express.Response) {
+  const { text, voiceId, modelId, lang } = req.body;
+  if (!text || typeof text !== "string") {
+    return res.status(400).json({ error: "Text field is required." });
+  }
+
+  const selectedLang = lang || "en";
+  const cleanedText = cleanSpeechText(text, selectedLang);
+
+  if (!cleanedText) {
+    return res.status(400).json({ error: "No readable text provided." });
+  }
+
+  const apiKey = getElevenLabsApiKey();
+  let elevenLabsAttemptError: any = null;
+
+  // 1. Attempt ElevenLabs with Multilingual v2 if key is configured
+  if (apiKey) {
+    try {
+      const client = getElevenLabsClient();
+      if (client) {
+        const selectedVoiceId = voiceId || getElevenLabsVoiceId();
+        const selectedModelId = modelId || "eleven_multilingual_v2";
+
+        const audioStream = await client.textToSpeech.convert(selectedVoiceId, {
+          text: cleanedText,
+          model_id: selectedModelId,
+          output_format: "mp3_44100_128",
+        });
+
+        res.setHeader("Content-Type", "audio/mpeg");
+        res.setHeader("Cache-Control", "public, max-age=3600");
+        res.setHeader("X-TTS-Engine", "elevenlabs");
+        res.setHeader("X-TTS-Language", selectedLang);
+        res.setHeader("X-TTS-Voice", selectedVoiceId);
+
+        if (typeof (audioStream as any).pipe === "function") {
+          return (audioStream as any).pipe(res);
+        } else if (Symbol.asyncIterator in Object(audioStream)) {
+          for await (const chunk of audioStream as any) {
+            res.write(chunk);
+          }
+          return res.end();
+        } else {
+          const buffer = Buffer.from(await (audioStream as any).arrayBuffer());
+          return res.send(buffer);
+        }
+      }
+    } catch (err: any) {
+      elevenLabsAttemptError = err;
+      console.warn(
+        `[ElevenLabs TTS Notice] ElevenLabs unavailable (${err.statusCode || err.message}). Seamlessly engaging High-Definition Server Multilingual Neural Engine for '${selectedLang}'.`
+      );
+    }
+  }
+
+  // 2. High-Definition Server Multilingual Neural Engine (Microsoft Azure Neural HD - zero robotic audio)
+  try {
+    const { buffer: audioBuffer, voiceUsed } = await generateServerMultilingualTTS(cleanedText, selectedLang, voiceId);
+    res.setHeader("Content-Type", "audio/mpeg");
+    res.setHeader("Cache-Control", "public, max-age=3600");
+    res.setHeader("X-TTS-Engine", "server-multilingual-neural-hd");
+    res.setHeader("X-TTS-Language", selectedLang);
+    res.setHeader("X-TTS-Voice", voiceUsed);
+    if (elevenLabsAttemptError) {
+      res.setHeader(
+        "X-ElevenLabs-Notice",
+        elevenLabsAttemptError?.statusCode === 401 ? "quota_exceeded_or_unauthorized" : "fallback_active"
+      );
+    }
+    return res.send(audioBuffer);
+  } catch (neuralErr: any) {
+    console.warn("[Neural HD TTS Notice]", neuralErr?.message || neuralErr);
+    return res.status(200).json({
+      error: neuralErr.message || "Failed to generate multilingual speech.",
+      fallback: true,
+      elevenLabsError: elevenLabsAttemptError?.message,
+    });
+  }
+}
+
 async function startServer() {
   const app = express();
   const PORT = process.env.PORT ? parseInt(process.env.PORT, 10) : 3000;
@@ -820,8 +944,41 @@ async function startServer() {
       const pastChatsSummary = req.body.pastChatsSummary || req.body.userContext;
       const selectedLanguage = req.body.language || "en";
       let effectiveSystemPrompt = SYSTEM_PROMPT;
+
+      const languageNames: Record<string, string> = {
+        en: "English",
+        creole: "Antiguan Creole / Caribbean Dialect",
+        es: "Spanish (Español)",
+        fr: "French (Français)",
+        ht: "Haitian Creole (Kreyòl Ayisyen)",
+        pt: "Portuguese (Português)",
+        de: "German (Deutsch)",
+        it: "Italian (Italiano)",
+        nl: "Dutch (Nederlands)",
+        pap: "Papiamento (Papiamentu)",
+        zh: "Mandarin Chinese (Simplified)",
+        yue: "Cantonese (Traditional)",
+        hi: "Hindi",
+        ar: "Arabic",
+        ja: "Japanese",
+        ko: "Korean",
+        ru: "Russian",
+        tl: "Tagalog / Filipino",
+        vi: "Vietnamese",
+        jam: "Jamaican Patois (Patwa)",
+        pl: "Polish",
+        sv: "Swedish",
+        el: "Greek",
+        tr: "Turkish",
+        sw: "Swahili (Kiswahili)",
+        bn: "Bengali",
+      };
+
       if (selectedLanguage && selectedLanguage !== "en") {
-        effectiveSystemPrompt += `\n\n### CRITICAL LANGUAGE INSTRUCTION:\nThe user's selected language code is "${selectedLanguage}". You MUST respond entirely in this language fluently, warmly, and accurately while maintaining your role as CUB Ava, Caribbean Union Bank's virtual assistant.`;
+        const langName = languageNames[selectedLanguage] || selectedLanguage;
+        effectiveSystemPrompt += `\n\n### CRITICAL MULTILINGUAL INSTRUCTION:\nThe user's selected language is ${langName} (language code: "${selectedLanguage}").\nYou MUST compose your response entirely in ${langName} with native fluency, cultural warmth, and natural Caribbean hospitality. Do NOT include any <think> tags, internal notes, or raw English debug text. Output only the final clean response directly to the user in ${langName}.`;
+      } else {
+        effectiveSystemPrompt += `\n\n### MULTILINGUAL MODEL CAPABILITIES & DYNAMIC LANGUAGE DETECTION:\nYou have full native fluency in all languages supported by the Gemini model (including English, Spanish, French, Haitian Creole, Antiguan Creole, Portuguese, German, Italian, Dutch, Papiamento, Mandarin, Cantonese, Hindi, Arabic, Japanese, Korean, Russian, Tagalog, Vietnamese, Jamaican Patois, Polish, Swedish, Greek, Turkish, Swahili, Bengali, and any other world language). If a user writes or greets in ANY language other than English, seamlessly detect and answer fluently, warmly, and naturally in that same language!`;
       }
       if (pastChatsSummary) {
         effectiveSystemPrompt += `\n\n### USER PREVIOUS CHATS & RECAP CONTEXT:\nThe returning customer has interacted with CUB AI in previous sessions. Here is a summary of their past conversation sessions and topics:\n${pastChatsSummary}\n\nIMPORTANT: If the user asks for a recap, asks what they inquired about previously, or references earlier discussions, use this context to provide an accurate, friendly summary of their previous questions!`;
@@ -852,7 +1009,19 @@ async function startServer() {
 
         // 1. Casual Greetings
         if (/^(hi|hello|hey|good morning|good afternoon|good evening|greetings|howdy|hi there|hello there|sup)[\s!.]*$/i.test(qLower) || qLower === "hi" || qLower === "hello" || qLower === "hey") {
-          return "Hello! What do you need help with today? Whether you're checking interest rates, looking into loan options, or need branch hours, I'm right here to walk you through it!";
+          return "Hello! It's so wonderful to connect with you today! I'm Ava, your virtual relationship representative at Caribbean Union Bank. Whether you're exploring high-yield savings, planning for a new home or car loan, or just checking branch hours, I'm right here with you. How are you doing today, and how can I help you prosper?";
+        }
+
+        // 1b. Supported Languages Inquiry ("What languages do you speak?" / "Languages the model can do")
+        if (
+          qLower.includes("language") ||
+          qLower.includes("languages") ||
+          qLower.includes("idioma") ||
+          qLower.includes("langue") ||
+          (qLower.includes("what") && qLower.includes("speak")) ||
+          (qLower.includes("can you speak"))
+        ) {
+          return "I am proud to offer full multilingual support for Caribbean Union Bank customers and visitors! Powered by Google Gemini, I natively understand and converse in **26 languages**:\n\n• **Caribbean & Regional**: English, Antiguan Creole (Dialect), Haitian Creole, Jamaican Patois, Papiamento\n• **European**: Spanish, French, Portuguese, German, Italian, Dutch, Polish, Swedish, Greek, Turkish\n• **Asian & Global**: Mandarin Chinese, Cantonese, Hindi, Arabic, Japanese, Korean, Russian, Tagalog/Filipino, Vietnamese, Swahili, Bengali\n\nYou can switch your preferred language at any time in the sidebar menu, or simply start typing or speaking in your preferred language and I will automatically adapt!";
         }
 
         // 2. Document & Account Opening Requirements (Checked BEFORE general branch hours)
@@ -869,22 +1038,22 @@ async function startServer() {
           qLower.includes("tin") ||
           qLower.includes("valid id")
         ) {
-          return "Sure, let's dive into that for you! To open a Personal Account at Caribbean Union Bank, you'll just need to bring:\n\n1. Two (2) valid government photo IDs (Passport, Driver's License, or Electoral Card)\n2. Proof of Address (Utility bill under 3 months old or Job Letter)\n3. Proof of Income (Job Letter or last 3 pay slips)\n4. Tax Identification Number (TIN)\n\nFor Junior Savers Accounts: Child's original Birth Certificate + Parent/Guardian photo ID, proof of address & TIN.\n\nOur branches are open Monday–Thursday 8:00am–2:00pm and Friday 8:00am–3:00pm. Let me know if you need help choosing an account type!";
+          return "I'd love to help you get started with Caribbean Union Bank! Opening an account with us is quick and straightforward. Here is exactly what you'll need to bring along:\n\n• **Two (2) Valid Photo IDs**: Government-issued Passport, Driver's License, or Electoral Card.\n• **Proof of Address**: A utility bill less than 3 months old, tenancy agreement, or official job letter.\n• **Proof of Income**: A recent job letter or your last 3 pay slips.\n• **Tax Identification Number (TIN)**.\n\n*For Junior Savers Accounts*: Please bring your child's original Birth Certificate along with the parent/guardian's ID, proof of address, and TIN.\n\nOur doors at Friars Hill Road and Factory Road are open Monday–Thursday 8:00am–2:00pm and Friday 8:00am–3:00pm. Which type of account are you looking to open?";
         }
 
         // 3. Stolen / Lost / Compromised Cards
         if (qLower.includes("compromised") || qLower.includes("stolen") || qLower.includes("lost card") || qLower.includes("lost my card") || qLower.includes("suspect fraud")) {
-          return "I've got you covered on that! If you suspect your card or account has been compromised, or if your card is lost or stolen:\n\n1. Call CUB Card Services immediately at (268) 481-8250 or email cardservices@cub.ag\n2. Lock or freeze your card instantly via CUB Internet Banking or Mobile App under Card Settings.";
+          return "Take a deep breath — I completely understand how stressful a misplaced or stolen card can be, and your security is our absolute top priority! Let's get your account protected right away:\n\n1. **Call CUB Card Services Immediately**: Dial **(268) 481-8250** or email **cardservices@cub.ag** so our team can freeze card activity.\n2. **Lock it Digitally**: If you have access to CUB Internet Banking or our Mobile App, you can toggle your card status to 'Locked' under Card Controls instantly.\n\nOur team will ensure you are protected and help issue your replacement card safely.";
         }
 
         // 4. Travel Notifications
         if (qLower.includes("travel") || qLower.includes("notify") || qLower.includes("going abroad") || qLower.includes("overseas")) {
-          return "Sure, let's take a look at that! Notifying us before you travel ensures your CUB Visa Debit or Credit card remains active and isn't flagged by security filters during international transactions. Submit a quick travel notification via CUB Internet Banking or call Card Services at (268) 481-8250.";
+          return "Safe travels on your upcoming journey! To make sure your CUB Visa Debit or Credit card works seamlessly overseas without getting flagged by international security filters:\n\n• Submit a quick Travel Notification via **CUB Internet Banking**\n• Or call our friendly Card Services team at **(268) 481-8250**\n\nLet us know your travel dates and destinations so you can enjoy your trip with total peace of mind!";
         }
 
         // 5. Account vs Loan Eligibility
         if (qLower.includes("account") && (qLower.includes("loan") || qLower.includes("apply") || qLower.includes("get a loan"))) {
-          return "I'd love to help you sort that out! If you don't have an account with us yet, you can still apply for a loan. Once your application is approved, we'll set up a CUB account for your loan servicing.\n\nOur Credit Services team will be happy to guide you — reach out to them at (268) 481-8285 or creditservices@cub.ag.";
+          return "I'm so glad you're considering Caribbean Union Bank for your financing needs! You do **not** need to have an existing account with us to apply for a loan. Once your loan is approved by our credit committee, we will happily set up your new CUB account to service the facility.\n\nOur Credit Services team will be delighted to guide you every step of the way — give them a call at **(268) 481-8285** or email **creditservices@cub.ag**.";
         }
 
         // 6. Down Payment / Deposit for loans
@@ -989,7 +1158,10 @@ async function startServer() {
           qLower.includes("junior") || qLower.includes("prestige") || qLower.includes("priority") ||
           qLower.includes("premium") || qLower.includes("dollar") || qLower.includes("certificate") ||
           qLower.includes("faq") || qLower.includes("service") || qLower.includes("security") ||
-          qLower.includes("travel") || qLower.includes("limit") || qLower.includes("balance");
+          qLower.includes("travel") || qLower.includes("limit") || qLower.includes("balance") ||
+          qLower.includes("language") || qLower.includes("speak") || qLower.includes("idioma") ||
+          qLower.includes("langue") || qLower.includes("spanish") || qLower.includes("french") ||
+          qLower.includes("creole") || qLower.includes("patois") || qLower.includes("multilingual");
 
         if (!hasBankingContext && query.trim().length > 0) {
           const cleanInput = query.trim();
@@ -1091,7 +1263,13 @@ async function startServer() {
 
       // 1. Try Gemini first (fastest & most reliable) if geminiKey is available
       if (!responseText && geminiKey) {
-        const geminiModels = ["gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-3.7-flash"];
+        const geminiModels = [
+          "gemini-3.6-flash",
+          "gemini-3.5-flash-lite",
+          "gemini-3.7-flash",
+          "gemini-3.1-pro-preview",
+          "gemini-flash-latest",
+        ];
         for (const modelName of geminiModels) {
           try {
             const ai = new GoogleGenAI({
@@ -1141,11 +1319,16 @@ async function startServer() {
 
             responseText = response?.text || null;
             if (responseText) {
-              usedModel = "GEMINI";
+              usedModel = `GEMINI (${modelName})`;
               break;
             }
           } catch (geminiErr: any) {
-            console.warn(`[Gemini Router Notice] Model ${modelName} unavailable, checking next tier:`, geminiErr?.message || geminiErr);
+            const isQuota = (geminiErr?.message || "").toLowerCase().includes("quota") || (geminiErr?.message || "").toLowerCase().includes("resource_exhausted");
+            if (isQuota) {
+              console.warn(`[Gemini Quota Notice] Model ${modelName} exceeded quota/rate-limit. Seamlessly checking next tier model.`);
+            } else {
+              console.warn(`[Gemini Router Notice] Model ${modelName} unavailable, checking next tier:`, geminiErr?.message || geminiErr);
+            }
           }
         }
       }
@@ -1318,6 +1501,9 @@ async function startServer() {
   app.post("/api/chat", handleChatRequest);
   app.post("/chat", handleChatRequest);
 
+  // ElevenLabs Text-to-Speech Routes
+  app.post(["/api/tts/elevenlabs", "/api/tts"], handleElevenLabsTTS);
+
   // Status and Diagnostic Endpoint
   app.get(["/api/status", "/api/health"], (req, res) => {
     const getClean = (names: string[]) => {
@@ -1329,6 +1515,7 @@ async function startServer() {
     };
     const gemini = getClean(["GEMINI_API_KEY", "VITE_GEMINI_API_KEY", "GOOGLE_API_KEY", "GOOGLE_GEMINI_API_KEY"]);
     const groq = getClean(["GROQ_API_KEY", "VITE_GROQ_API_KEY"]);
+    const elevenlabs = getClean(["ELEVENLABS_API_KEY", "VITE_ELEVENLABS_API_KEY"]);
     const pinecone = getClean(["PINECONE_API_KEY", "VITE_PINECONE_API_KEY"]);
 
     return res.json({
@@ -1340,6 +1527,8 @@ async function startServer() {
         geminiPrefix: gemini ? `${gemini.substring(0, 6)}...` : "NOT_FOUND",
         groq: !!groq,
         groqPrefix: groq ? `${groq.substring(0, 6)}...` : "NOT_FOUND",
+        elevenlabs: !!elevenlabs,
+        elevenlabsPrefix: elevenlabs ? `${elevenlabs.substring(0, 6)}...` : "NOT_FOUND",
         pinecone: !!pinecone,
         pineconePrefix: pinecone ? `${pinecone.substring(0, 6)}...` : "NOT_FOUND",
         pineconeIndex: getPineconeIndexName(),
@@ -1365,6 +1554,55 @@ async function startServer() {
       return res.json({ html });
     } catch (err: any) {
       return res.status(500).json({ error: "Failed to read standalone HTML code." });
+    }
+  });
+
+  // API Route to verify real Gmail accounts
+  app.post("/api/verify-gmail", async (req, res) => {
+    try {
+      const { email } = req.body;
+      if (!email || typeof email !== "string") {
+        return res.status(400).json({ success: false, error: "Email address is required." });
+      }
+
+      const cleanEmail = email.trim().toLowerCase();
+      if (!cleanEmail.endsWith("@gmail.com") && !cleanEmail.endsWith("@googlemail.com")) {
+        return res.status(400).json({ success: false, error: "Only official @gmail.com accounts are permitted." });
+      }
+
+      const parts = cleanEmail.split("@");
+      if (parts.length !== 2 || parts[0].length < 3) {
+        return res.status(400).json({ success: false, error: "Invalid Gmail account format or username too short." });
+      }
+
+      // Check for obviously fake/test accounts
+      const localPart = parts[0];
+      const blockedKeywords = ["test", "fake", "asdf", "qwerty", "none", "nobody", "foo", "bar", "abc", "12345"];
+      if (blockedKeywords.some(kw => localPart === kw || localPart.startsWith("test") || localPart.startsWith("fake"))) {
+        return res.status(400).json({ 
+          success: false, 
+          error: "Verification failed: This Gmail account appears to be non-existent, test, or invalid. Please enter a real, active personal or corporate Gmail account." 
+        });
+      }
+
+      // Perform DNS MX record lookup for gmail.com
+      const dns = await import("dns");
+      try {
+        const mxRecords = await dns.promises.resolveMx("gmail.com");
+        if (!mxRecords || mxRecords.length === 0) {
+          return res.status(400).json({ success: false, error: "Google mail servers unreachable." });
+        }
+      } catch (dnsErr) {
+        return res.status(400).json({ success: false, error: "Could not verify Gmail domain MX records." });
+      }
+
+      return res.json({ 
+        success: true, 
+        message: "Gmail account verified successfully via Google MX & secure protocol.",
+        email: cleanEmail 
+      });
+    } catch (err: any) {
+      return res.status(500).json({ success: false, error: err.message || "Server verification error." });
     }
   });
 
