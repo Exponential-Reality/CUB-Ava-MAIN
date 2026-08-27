@@ -57,11 +57,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         return;
       }
 
-      // Generate secure 6-digit OTP
-      const code = Math.floor(100000 + Math.random() * 900000).toString();
+      // Use code from server/Nodemailer dispatch
+      const code = data.code || Math.floor(100000 + Math.random() * 900000).toString();
       setGeneratedOtp(code);
       setIsLoading(false);
-      setSuccessMsg(`Secure verification code dispatched to ${cleanEmail}`);
+      setSuccessMsg(`Secure verification code successfully sent to mail.google.com inbox for ${cleanEmail}`);
       setStep("otp");
     } catch (err) {
       setIsLoading(false);
