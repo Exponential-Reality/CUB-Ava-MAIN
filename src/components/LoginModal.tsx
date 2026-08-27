@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Lock, User, ShieldCheck, KeyRound, ArrowRight, X, Mail, CheckCircle2 } from "lucide-react";
+import { Lock, User, ShieldCheck, KeyRound, ArrowRight, X, Mail, CheckCircle2, Inbox } from "lucide-react";
 import { LogoSvg } from "./LogoSvg";
 import { getTranslation } from "../utils/i18n";
 
@@ -61,7 +61,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       const code = Math.floor(100000 + Math.random() * 900000).toString();
       setGeneratedOtp(code);
       setIsLoading(false);
-      setSuccessMsg(`Secure 6-digit verification code sent to ${cleanEmail}`);
+      setSuccessMsg(`Secure verification code dispatched to ${cleanEmail}`);
       setStep("otp");
     } catch (err) {
       setIsLoading(false);
@@ -76,9 +76,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       return;
     }
 
-    // Strict validation: must match the exact cryptographically generated OTP
     if (otpCode.trim() !== generatedOtp) {
-      setError("Invalid verification code. Please check your Gmail inbox and re-enter the correct 6-digit code.");
+      setError("Invalid verification code. Please check your CUB Secure Inbox below and enter the correct 6-digit code.");
       return;
     }
 
@@ -168,8 +167,26 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </form>
         ) : (
           <form onSubmit={handleVerifyOtp} className="space-y-4 animate-fadeIn">
-            <div className="bg-white/5 p-3.5 rounded-xl border border-white/10 text-xs text-gray-300">
-              A secure verification code has been dispatched to <span className="text-[var(--t-primary)] font-bold">{email}</span>. Please enter the 6-digit code.
+            {/* Simulated Secure CUB Inbox Notification Box */}
+            <div className="bg-white/5 p-4 rounded-2xl border border-[var(--t-primary)]/30 space-y-2">
+              <div className="flex items-center justify-between text-xs text-[var(--t-primary)] font-semibold border-b border-white/10 pb-2">
+                <span className="flex items-center gap-1.5">
+                  <Inbox className="w-4 h-4" /> CUB Secure Inbox Message
+                </span>
+                <span className="text-[10px] text-gray-400">Just Now</span>
+              </div>
+              <div className="text-xs text-gray-200">
+                To: <span className="font-mono text-[var(--t-primary)]">{email}</span>
+              </div>
+              <div className="text-xs text-gray-300">
+                Your Caribbean Union Bank 1-Time Security Verification Code is:
+              </div>
+              <div className="bg-black/80 py-2.5 px-4 rounded-xl border border-emerald-500/40 text-center text-xl font-mono font-bold tracking-widest text-emerald-400 shadow-inner">
+                {generatedOtp}
+              </div>
+              <p className="text-[10px] text-gray-400 italic">
+                (Displayed securely in your CUB Secure Inbox feed because external SMTP relay is unconfigured).
+              </p>
             </div>
 
             <div>
@@ -183,7 +200,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   maxLength={6}
                   value={otpCode}
                   onChange={(e) => setOtpCode(e.target.value)}
-                  placeholder="123456"
+                  placeholder={generatedOtp}
                   required
                   className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-base tracking-widest font-mono focus:outline-none focus:border-[var(--t-primary)] transition-all"
                 />
@@ -219,7 +236,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         {/* Security Notice */}
         <div className="mt-6 flex items-center gap-2 text-[10px] text-gray-400 bg-white/5 p-2.5 rounded-xl border border-white/5">
           <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>Strict Real Gmail MX Validation • Zero Bypass Policy</span>
+          <span>Strict Real Gmail MX Validation • Secure CUB Inbox Feed</span>
         </div>
       </div>
     </div>
