@@ -263,6 +263,19 @@ export const ChatWindow: React.FC<ChatWindowProps> = ({
                         </>
                       )}
                     </button>
+                    {msg.source && (
+                      <div className="relative group/source">
+                        <button
+                          title="View Source"
+                          className="flex items-center gap-1 font-semibold text-[var(--t-primary)] opacity-90 hover:opacity-100 transition-opacity cursor-pointer"
+                        >
+                          <span className="text-xs">Source</span>
+                        </button>
+                        <div className="absolute bottom-full left-0 mb-2 w-48 p-2 bg-[#2a2521] border border-[var(--line)] rounded-lg text-[10px] text-gray-200 shadow-xl opacity-0 group-hover/source:opacity-100 transition-opacity pointer-events-none">
+                          {msg.source}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 </div>
               )}

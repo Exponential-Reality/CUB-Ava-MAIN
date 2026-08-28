@@ -1093,6 +1093,11 @@ async function startServer() {
           return "Sure, let's dive into those rates for you! Here are Caribbean Union Bank's current interest rates and prime lending benchmarks:\n\n• Priority Savings: 2.00% APY ($100 min opening amount)\n• Prestige Savings: Minimum 2.50% APY ($1,000 min opening amount)\n• Dollar A Day Savings: Minimum 2.25% APY ($100 min opening amount)\n• Premium Savers: Minimum 2.75% APY ($5,000 min opening amount)\n• Prime Lending Rate: Benchmark 10.00%, adjusted based on individual credit history.\n\n💡 I warmly invite you to try our interactive CUB Interest & Loan Calculator in the application to estimate exact monthly payments and growth projections!";
         }
 
+        // 11b. Step-by-Step Vehicle / Car Loan Guide
+        if (qLower.includes("car loan") || qLower.includes("vehicle loan") || qLower.includes("how to take out a car loan")) {
+          return "I'd be happy to guide you through our process for securing a vehicle loan! Getting approved for a new car is easier than you think. Here is the step-by-step guide:\n\n1. **Select Your Vehicle**: Find the car you want and get a formal invoice from the dealership.\n2. **Check Your Eligibility**: Ensure you have a valid photo ID, proof of address, and recent job letter/pay slips.\n3. **Calculate Payments**: Use our in-app Interest & Loan Calculator to estimate your monthly budget.\n4. **Submit Application**: Bring your documents and invoice to our Credit Services department, or call (268) 481-8285 to start the process.\n5. **Credit Assessment**: Our team will review your credit history and application.\n6. **Approval & Disbursement**: Once approved, we will coordinate with you and the dealer for payment.\n\nReady to get started? Call us at **(268) 481-8285** or email **creditservices@cub.ag** to speak with a credit officer!";
+        }
+
         // 11. Branch Hours, Locations, Addresses (SPECIFIC MATCHING ONLY)
         if (
           qLower.includes("branch") ||
@@ -1116,6 +1121,11 @@ async function startServer() {
         // 12. Loans & Mortgages
         if (qLower.includes("loan") || qLower.includes("mortgage") || qLower.includes("borrow") || qLower.includes("land") || qLower.includes("vehicle") || qLower.includes("car")) {
           return "Sure, let's explore your financing options! Caribbean Union Bank offers flexible financing options to fit your needs:\n\n• **Mortgages**: Residential purchases, construction, and remodeling.\n• **Vehicle Loans**: Competitive financing for new and pre-owned automobiles.\n• **Land Purchase Loans**: Financing for residential or commercial land plots.\n• **Personal / Consumer Loans**: Financing for education, travel, medical expenses, debt consolidation, home repairs, and more.\n\n• **Prime Lending Rate**: CUB's current Prime Lending Rate is 10.00%. The interest rate offered to each customer may be higher or lower depending on credit history and the results of CUB's credit assessment.\n\nFor personalized loan advice or to begin an application, contact CUB Credit Services at (268) 481-8285 or email creditservices@cub.ag.\n\n💡 *Tip: You can also use our interactive CUB Interest & Loan Calculator in the app to estimate monthly payments!*";
+        }
+
+        // 12a. Security & Privacy
+        if (qLower.includes("secure") || qLower.includes("security") || qLower.includes("protect") || qLower.includes("safe") || qLower.includes("safety")) {
+          return "At Caribbean Union Bank, we treat the security of your account with the utmost seriousness. We utilize industry-leading encryption for all online and mobile banking sessions, employ multi-layered authentication, and continuously monitor for suspicious activity to ensure your financial assets are protected 24/7. \n\nWe recommend maintaining strong, unique passwords for your online banking and never sharing your credentials with anyone. If you ever suspect your account has been compromised, please contact our Card Services or Customer Service team immediately.";
         }
 
         // 13. Accounts & Savings
@@ -1266,9 +1276,7 @@ async function startServer() {
         const geminiModels = [
           "gemini-3.6-flash",
           "gemini-3.5-flash-lite",
-          "gemini-3.7-flash",
           "gemini-3.1-pro-preview",
-          "gemini-flash-latest",
         ];
         for (const modelName of geminiModels) {
           try {
@@ -1409,6 +1417,7 @@ async function startServer() {
         routingReason: routeDecision.reason,
         vectorMemoryActive: !!getPineconeApiKey(),
         sqliteActive: true,
+        source: "Caribbean Union Bank Official Knowledge Base",
       });
     } catch (error: any) {
       console.error("Chat API fallback handler triggered:", error);
@@ -1419,6 +1428,7 @@ async function startServer() {
         message: safeReply,
         routedModel: "CUB_KNOWLEDGE_ENGINE",
         routingReason: "Graceful recovery mode",
+        source: "Caribbean Union Bank Official Knowledge Base",
       });
     }
   };

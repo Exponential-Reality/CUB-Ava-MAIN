@@ -1,5 +1,7 @@
 # Caribbean Union Bank AI Assistant (CUB AI)
 
+> **Try the CUB AI Chatbox:** [Launch Application](https://cub-ava.onrender.com)
+
 Official digital banking assistant and multi-model AI system for **Caribbean Union Bank** (Antigua & Barbuda). Built with TypeScript, React, Vite, Node.js, and standalone zero-dependency HTML/JS for direct FastAPI integration.
 
 ---

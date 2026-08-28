@@ -38,6 +38,7 @@ export interface ChatMessage {
   routedModel?: "GEMINI" | "GROQ" | "LOCAL_KNOWLEDGE_ENGINE";
   routingReason?: string;
   animated?: boolean;
+  source?: string;
 }
 
 export interface ChatSession {

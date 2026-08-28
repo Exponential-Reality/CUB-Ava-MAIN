@@ -368,6 +368,7 @@ export const App: React.FC = () => {
         timestamp: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" }),
         routedModel: data.routedModel,
         routingReason: data.routingReason,
+        source: data.source,
       };
 
       setSessions((prev) =>
