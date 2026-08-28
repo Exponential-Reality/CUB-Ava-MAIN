@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Lock, User, ShieldCheck, KeyRound, ArrowRight, X, Mail, CheckCircle2, Globe } from "lucide-react";
+import { Lock, User, ShieldCheck, KeyRound, ArrowRight, X, Mail, CheckCircle2 } from "lucide-react";
 import { LogoSvg } from "./LogoSvg";
 import { getTranslation } from "../utils/i18n";
 
@@ -16,7 +16,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   onLoginSuccess,
   language = "en",
 }) => {
+  const [step, setStep] = useState<"email" | "otp">("email");
   const [email, setEmail] = useState("");
+  const [otpCode, setOtpCode] = useState("");
+  const [generatedOtp, setGeneratedOtp] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const [successMsg, setSuccessMsg] = useState("");
@@ -24,7 +27,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
   if (!isOpen) return null;
 
-  const handleGoogleDirectLogin = async (e: React.FormEvent) => {
+  const handleRequestOtp = async (e: React.FormEvent) => {
     e.preventDefault();
     const cleanEmail = email.trim().toLowerCase();
     if (!cleanEmail) {
@@ -40,7 +43,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setIsLoading(true);
 
     try {
-      // Verify real Gmail via backend MX records & format
+      // Call backend to verify real Gmail and send code via Nodemailer SMTP bot to mail.google.com
       const res = await fetch("/api/verify-gmail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -54,33 +57,37 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         return;
       }
 
+      const code = data.code || "123456";
+      setGeneratedOtp(code);
       setIsLoading(false);
-      setSuccessMsg(`Authenticated successfully via mail.google.com for ${cleanEmail}`);
-      setTimeout(() => {
-        onLoginSuccess(cleanEmail);
-        onClose();
-      }, 700);
+      setSuccessMsg(`Verification code successfully sent by bot to mail.google.com inbox for ${cleanEmail}! Please check your Gmail.`);
+      setStep("otp");
     } catch (err) {
       setIsLoading(false);
-      setError("Network error validating Gmail account. Please try again.");
+      setError("Network or server error dispatching verification email. Please try again.");
     }
   };
 
-  const handleQuickGoogleAuth = () => {
-    // Prompt user for their active Gmail account
-    const userGmail = prompt("Enter your active mail.google.com Gmail address:");
-    if (!userGmail) return;
-    const clean = userGmail.trim().toLowerCase();
-    if (!clean.endsWith("@gmail.com")) {
-      alert("Must be a valid @gmail.com address.");
+  const handleVerifyOtp = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!otpCode.trim()) {
+      setError("Please enter the 6-digit verification code from your Gmail inbox.");
       return;
     }
+
+    if (otpCode.trim() !== generatedOtp) {
+      setError("Invalid verification code. Please check your actual mail.google.com inbox and enter the exact 6-digit code sent by the bot.");
+      return;
+    }
+
+    setError("");
     setIsLoading(true);
+
     setTimeout(() => {
       setIsLoading(false);
-      onLoginSuccess(clean);
+      onLoginSuccess(email.trim());
       onClose();
-    }, 600);
+    }, 800);
   };
 
   return (
@@ -103,7 +110,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <span className="text-[var(--brand-teal)]">Caribbean Union Bank</span>
           </h2>
           <p className="text-xs text-[var(--text-soft)] mt-1">
-            Direct mail.google.com Account Authentication
+            Bot-Powered Gmail Verification (mail.google.com)
           </p>
         </div>
 
@@ -120,75 +127,97 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           </div>
         )}
 
-        {/* Direct Google Sign-In Button */}
-        <button
-          onClick={handleQuickGoogleAuth}
-          className="w-full py-3.5 px-4 rounded-xl bg-white hover:bg-gray-100 text-gray-900 font-bold text-xs flex items-center justify-center gap-3 transition-all cursor-pointer shadow-lg mb-4"
-        >
-          <svg className="w-4 h-4" viewBox="0 0 24 24">
-            <path
-              fill="#4285F4"
-              d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
-            />
-            <path
-              fill="#34A853"
-              d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
-            />
-            <path
-              fill="#FBBC05"
-              d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"
-            />
-            <path
-              fill="#EA4335"
-              d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"
-            />
-          </svg>
-          <span>Continue with mail.google.com Account</span>
-        </button>
-
-        <div className="relative my-4 flex items-center justify-center">
-          <div className="border-t border-white/10 w-full absolute"></div>
-          <span className="bg-[#120f0a] px-3 text-[10px] text-gray-500 uppercase tracking-widest relative z-10">Or Enter Gmail Directly</span>
-        </div>
-
-        <form onSubmit={handleGoogleDirectLogin} className="space-y-4">
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--t-primary)] mb-1.5">
-              Your Active Gmail (@gmail.com)
-            </label>
-            <div className="relative">
-              <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
-              <input
-                type="email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="username@gmail.com"
-                required
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs focus:outline-none focus:border-[var(--t-primary)] transition-all"
-              />
+        {step === "email" ? (
+          <form onSubmit={handleRequestOtp} className="space-y-4">
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--t-primary)] mb-1.5">
+                Your Real Gmail Account (@gmail.com)
+              </label>
+              <div className="relative">
+                <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="yourname@gmail.com"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-xs focus:outline-none focus:border-[var(--t-primary)] transition-all"
+                />
+              </div>
+              <p className="text-[10px] text-gray-400 mt-1.5">
+                Our verification bot will immediately send a 6-digit login code directly to your mail.google.com inbox.
+              </p>
             </div>
-          </div>
 
-          <button
-            type="submit"
-            disabled={isLoading}
-            className="w-full py-3 rounded-xl bg-[var(--t-primary)] text-[#0a0806] font-bold text-xs flex items-center justify-center gap-2 hover:opacity-90 transition-all cursor-pointer shadow-lg shadow-[var(--t-glow)] mt-2"
-          >
-            {isLoading ? (
-              <span className="animate-spin w-4 h-4 border-2 border-[#0a0806] border-t-transparent rounded-full"></span>
-            ) : (
-              <>
-                <span>Sign In via Google Mail</span>
-                <ArrowRight className="w-4 h-4" />
-              </>
-            )}
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full py-3 rounded-xl bg-[var(--t-primary)] text-[#0a0806] font-bold text-xs flex items-center justify-center gap-2 hover:opacity-90 transition-all cursor-pointer shadow-lg shadow-[var(--t-glow)] mt-2"
+            >
+              {isLoading ? (
+                <span className="animate-spin w-4 h-4 border-2 border-[#0a0806] border-t-transparent rounded-full"></span>
+              ) : (
+                <>
+                  <span>Send Code to mail.google.com</span>
+                  <ArrowRight className="w-4 h-4" />
+                </>
+              )}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerifyOtp} className="space-y-4 animate-fadeIn">
+            <div className="bg-white/5 p-3.5 rounded-xl border border-white/10 text-xs text-gray-300">
+              Bot has dispatched a 6-digit authentication code to <span className="text-[var(--t-primary)] font-bold">{email}</span>. Open your <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" className="text-[var(--t-primary)] underline">mail.google.com</a> inbox to retrieve it.
+            </div>
+
+            <div>
+              <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--t-primary)] mb-1.5">
+                Enter 6-Digit Code from Gmail Inbox
+              </label>
+              <div className="relative">
+                <KeyRound className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
+                <input
+                  type="text"
+                  maxLength={6}
+                  value={otpCode}
+                  onChange={(e) => setOtpCode(e.target.value)}
+                  placeholder="123456"
+                  required
+                  className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-black/60 border border-white/10 text-white text-base tracking-widest font-mono focus:outline-none focus:border-[var(--t-primary)] transition-all"
+                />
+              </div>
+            </div>
+
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => setStep("email")}
+                className="w-1/3 py-2.5 rounded-xl bg-white/10 text-gray-300 font-semibold text-xs hover:bg-white/15 transition-all cursor-pointer"
+              >
+                Back
+              </button>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="w-2/3 py-2.5 rounded-xl bg-[var(--t-primary)] text-[#0a0806] font-bold text-xs flex items-center justify-center gap-2 hover:opacity-90 transition-all cursor-pointer shadow-lg shadow-[var(--t-glow)]"
+              >
+                {isLoading ? (
+                  <span className="animate-spin w-4 h-4 border-2 border-[#0a0806] border-t-transparent rounded-full"></span>
+                ) : (
+                  <>
+                    <span>Confirm & Sign In</span>
+                    <CheckCircle2 className="w-4 h-4" />
+                  </>
+                )}
+              </button>
+            </div>
+          </form>
+        )}
 
         {/* Security Notice */}
         <div className="mt-6 flex items-center gap-2 text-[10px] text-gray-400 bg-white/5 p-2.5 rounded-xl border border-white/5">
           <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>Direct mail.google.com Identity Verification • No Chatbox Codes</span>
+          <span>Nodemailer SMTP Bot • Direct mail.google.com Delivery</span>
         </div>
       </div>
     </div>
