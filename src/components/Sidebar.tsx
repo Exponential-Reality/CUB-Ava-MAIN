@@ -5,7 +5,7 @@ import { LogoSvg } from "./LogoSvg";
 import { LANGUAGES_LIST, LanguageOption } from "../data/languages";
 import { getTranslation } from "../utils/i18n";
 import { ELEVENLABS_VOICES } from "../utils/speech";
-import { Lock, MapPin, PhoneCall, Headphones, X, PlusCircle, Calculator, Home, CreditCard, ArrowRightLeft, TrendingUp, ShieldCheck, HelpCircle, Landmark, MessageSquare, Trash2, History, Sparkles, Monitor, ChevronDown, Layers, Globe2, Search, Check, Volume2, Mic, User, LogOut } from "lucide-react";
+import { Lock, MapPin, PhoneCall, Headphones, X, PlusCircle, Calculator, Home, CreditCard, ArrowRightLeft, TrendingUp, ShieldCheck, HelpCircle, Landmark, MessageSquare, Trash2, History, Sparkles, Monitor, ChevronDown, Layers, Globe2, Search, Check, Volume2, Mic, User, LogOut, Menu, Settings } from "lucide-react";
 
 interface SidebarProps {
   currentTheme: ThemeName;
@@ -28,6 +28,8 @@ interface SidebarProps {
   loggedInUser?: string | null;
   onOpenLoginModal?: () => void;
   onLogout?: () => void;
+  isDesktopSidebarOpen?: boolean;
+  onOpenSettings?: (tab?: any) => void;
 }
 
 export const Sidebar: React.FC<SidebarProps> = ({
@@ -51,11 +53,14 @@ export const Sidebar: React.FC<SidebarProps> = ({
   loggedInUser,
   onOpenLoginModal,
   onLogout,
+  isDesktopSidebarOpen = true,
+  onOpenSettings,
 }) => {
   const [showBranches, setShowBranches] = useState(false);
   const [showAnimDropdown, setShowAnimDropdown] = useState(false);
   const [showLangDropdown, setShowLangDropdown] = useState(false);
   const [showVoiceDropdown, setShowVoiceDropdown] = useState(false);
+  const [isMenuDropdownOpen, setIsMenuDropdownOpen] = useState(false);
   const [langSearchQuery, setLangSearchQuery] = useState<string>("");
   const [selectedBranchKey, setSelectedBranchKey] = useState<string>(
     "Headquarters — Friars Hill Road"
@@ -160,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
       <aside
         className={`fixed top-0 bottom-0 left-0 z-50 w-[300px] 3xl:w-[360px] bg-[#0b0806] border-r border-[var(--line-soft)] p-4 flex flex-col transition-transform duration-300 ease-in-out overflow-y-auto lg:translate-x-0 ${
           isOpenMobile ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
-        }`}
+        } ${!isDesktopSidebarOpen ? "lg:-translate-x-full lg:!translate-x-[-100%]" : ""}`}
       >
         {/* Mobile Close Button */}
         <button
@@ -185,54 +190,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         </div>
 
-        {/* New Chat Primary Button */}
-        <button
-          onClick={() => {
-            onNewChat();
-            onCloseMobile();
-          }}
-          className="w-full mb-3 group relative flex items-center justify-center gap-2.5 px-4 py-3 rounded-2xl bg-gradient-to-r from-[var(--t-primary)] to-[var(--t-secondary)] text-[#0a0806] font-extrabold text-xs uppercase tracking-wider shadow-lg shadow-[var(--t-glow)] hover:shadow-xl hover:brightness-110 active:scale-[0.98] transition-all duration-200 cursor-pointer border border-white/20"
-        >
-          <PlusCircle className="w-4 h-4 text-[#0a0806] group-hover:rotate-90 transition-transform duration-300 shrink-0" />
-          <span className="font-['Sora'] font-bold text-[13px]">{t.newConversation}</span>
-          <Sparkles className="w-3.5 h-3.5 text-[#0a0806]/70 group-hover:scale-125 transition-transform shrink-0 ml-auto" />
-        </button>
-
-        {/* User Login / Account Portal Card */}
-        <div className="mb-3.5 p-2.5 rounded-2xl bg-white/5 border border-[var(--line)] flex items-center justify-between gap-2 shadow-sm">
-          <div className="flex items-center gap-2 min-w-0">
-            <div className="w-8 h-8 rounded-xl bg-[var(--t-primary)]/20 border border-[var(--t-primary)]/40 flex items-center justify-center text-[var(--t-primary)] shrink-0 font-bold">
-              <User className="w-4 h-4" />
-            </div>
-            <div className="min-w-0 truncate">
-              <div className="text-[11px] font-bold text-white truncate">
-                {loggedInUser || "Guest Client"}
-              </div>
-              <div className="text-[9px] text-gray-400 truncate">
-                {loggedInUser ? "CUB Secure Banking" : "Sign in for account access"}
-              </div>
-            </div>
-          </div>
-          {loggedInUser ? (
-            <button
-              onClick={onLogout}
-              className="text-[10px] px-2 py-1 rounded-lg bg-red-500/10 text-red-300 hover:bg-red-500/20 font-semibold transition-all cursor-pointer shrink-0"
-              title="Sign Out"
-            >
-              Sign Out
-            </button>
-          ) : (
-            <button
-              onClick={onOpenLoginModal}
-              className="text-[10px] px-2.5 py-1 rounded-lg bg-[var(--t-primary)] text-[#0a0806] hover:opacity-90 font-bold transition-all cursor-pointer shrink-0 shadow-sm"
-            >
-              Sign In
-            </button>
-          )}
-        </div>
-
         {/* Navigation Menu */}
-        <div className="space-y-1 mb-4">
+        <div className="space-y-1 mb-4 mt-2">
           {NAV_ITEMS.map((item, idx) => {
             const isHome = item.label === "Home";
             const localizedLabel = getNavLocalizedLabel(item.label);
@@ -251,6 +210,67 @@ export const Sidebar: React.FC<SidebarProps> = ({
               </button>
             );
           })}
+
+          {/* Inline Dropdown for Menu / Settings */}
+          <div>
+            <button
+              onClick={() => setIsMenuDropdownOpen(!isMenuDropdownOpen)}
+              className={`w-full text-left px-3.5 py-2.5 rounded-[var(--radius-md)] text-[13px] font-medium flex items-center justify-between transition-all cursor-pointer ${
+                isMenuDropdownOpen ? "bg-white/10 text-white" : "text-[var(--text-soft)] hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              <div className="flex items-center gap-2.5">
+                <Menu className="w-4 h-4 shrink-0" />
+                <span>Menu Options</span>
+              </div>
+              <ChevronDown className={`w-4 h-4 transition-transform ${isMenuDropdownOpen ? "rotate-180" : ""}`} />
+            </button>
+            
+            {isMenuDropdownOpen && (
+              <div className="pl-4 pr-2 mt-1 space-y-1">
+                <button
+                  onClick={() => {
+                    if (onOpenSettings) onOpenSettings("account");
+                    if (isOpenMobile) onCloseMobile();
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text-soft)] hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <User className="w-3.5 h-3.5 text-[var(--t-primary)]" />
+                  {loggedInUser ? "Account & Sign Out" : "Secure Sign In"}
+                </button>
+                <button
+                  onClick={() => {
+                    if (onOpenSettings) onOpenSettings("appearance");
+                    if (isOpenMobile) onCloseMobile();
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text-soft)] hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Layers className="w-3.5 h-3.5 text-[var(--t-primary)]" />
+                  Theme & Animation
+                </button>
+                <button
+                  onClick={() => {
+                    if (onOpenSettings) onOpenSettings("voice");
+                    if (isOpenMobile) onCloseMobile();
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text-soft)] hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Mic className="w-3.5 h-3.5 text-[var(--t-primary)]" />
+                  Voice & Accent
+                </button>
+                <button
+                  onClick={() => {
+                    if (onOpenSettings) onOpenSettings("language");
+                    if (isOpenMobile) onCloseMobile();
+                  }}
+                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text-soft)] hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer"
+                >
+                  <Globe2 className="w-3.5 h-3.5 text-[var(--t-primary)]" />
+                  Language Support
+                </button>
+              </div>
+            )}
+          </div>
         </div>
 
         {/* Saved Chats / History Section */}
@@ -259,6 +279,17 @@ export const Sidebar: React.FC<SidebarProps> = ({
             <span className="flex items-center gap-1.5 text-[11px] font-bold text-[var(--t-primary)] uppercase tracking-wider">
               <History className="w-3.5 h-3.5" /> {t.savedChats} ({sessions.length})
             </span>
+            <button
+              onClick={() => {
+                onNewChat();
+                onCloseMobile();
+              }}
+              className="flex items-center gap-1 text-[10px] font-bold text-[#0a0806] bg-[var(--t-primary)] hover:opacity-90 px-2 py-1 rounded-md transition-all cursor-pointer shadow-sm"
+              title="Start New Conversation"
+            >
+              <PlusCircle className="w-3 h-3" />
+              New
+            </button>
           </div>
 
           <div className="space-y-1 max-h-[180px] overflow-y-auto pr-1 custom-scrollbar">
@@ -399,243 +430,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
           </div>
         )}
 
-        {/* Language Selector Dropdown Menu */}
-        <div className="mb-3 relative">
-          <div className="side-section-label">{t.languageSupport}</div>
-          <button
-            onClick={() => setShowLangDropdown((prev) => !prev)}
-            className="w-full text-left px-3 py-2 rounded-[var(--radius-md)] text-xs font-semibold bg-white/5 border border-[var(--line)] hover:border-[var(--t-primary)]/50 text-white flex items-center justify-between transition-all cursor-pointer shadow-sm hover:shadow-md"
-            title={t.selectLanguageTitle}
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="text-base shrink-0">{currentLang.flag}</span>
-              <span className="truncate text-gray-200">{currentLang.name}</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <span className="text-[10px] text-[var(--t-primary)] font-bold">24</span>
-              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showLangDropdown ? "rotate-180" : ""}`} />
-            </div>
-          </button>
 
-          {showLangDropdown && (
-            <div className="absolute left-0 right-0 mt-1.5 bg-[#14100c] border border-[var(--line)] rounded-2xl p-2.5 shadow-2xl z-50 animate-fadeIn backdrop-blur-xl space-y-2">
-              <div className="flex items-center justify-between gap-1 border-b border-white/5 pb-1.5">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--t-primary)] flex items-center gap-1.5">
-                  <Globe2 className="w-3 h-3" /> {t.selectLanguageTitle}
-                </span>
-              </div>
-              <div className="relative">
-                <Search className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-[var(--text-soft)]" />
-                <input
-                  type="text"
-                  value={langSearchQuery}
-                  onChange={(e) => setLangSearchQuery(e.target.value)}
-                  placeholder={t.searchLanguages}
-                  className="w-full pl-8 pr-3 py-1 text-xs bg-black/50 border border-white/10 rounded-lg text-white placeholder-gray-500 focus:outline-none focus:border-[var(--t-primary)]"
-                />
-              </div>
-              <div className="max-h-52 overflow-y-auto custom-scrollbar space-y-1 pr-1">
-                {filteredLanguages.map((lang) => {
-                  const isSelected = language === lang.code;
-                  return (
-                    <button
-                      key={lang.code}
-                      onClick={() => {
-                        if (onSelectLanguage) {
-                          onSelectLanguage(lang.code);
-                        }
-                        setShowLangDropdown(false);
-                        onCloseMobile();
-                      }}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${
-                        isSelected
-                          ? "bg-[var(--t-primary)]/25 text-white font-bold border border-[var(--t-primary)]/50 shadow-sm"
-                          : "text-[var(--text-soft)] hover:bg-white/5 hover:text-white"
-                      }`}
-                    >
-                      <div className="flex items-center gap-2 min-w-0">
-                        <span className="text-sm shrink-0">{lang.flag}</span>
-                        <div className="min-w-0 truncate">
-                          <span className="text-white block truncate leading-tight font-semibold">
-                            {lang.name}
-                          </span>
-                          <span className="text-[10px] text-gray-400 block truncate">
-                            {lang.nativeName}
-                          </span>
-                        </div>
-                      </div>
-                      {isSelected && (
-                        <Check className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0 stroke-[3]" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Voice Persona Selector */}
-        <div className="mb-3 relative">
-          <div className="side-section-label">Voice & Accent</div>
-          <button
-            onClick={() => {
-              if (!loggedInUser) {
-                if (onOpenLoginModal) onOpenLoginModal();
-                return;
-              }
-              setShowVoiceDropdown((prev) => !prev);
-            }}
-            className="w-full text-left px-3 py-2 rounded-[var(--radius-md)] text-xs font-semibold bg-white/5 border border-[var(--line)] hover:border-[var(--t-primary)]/50 text-white flex items-center justify-between transition-all cursor-pointer shadow-sm hover:shadow-md"
-            title="Select AI Voice Persona"
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <Volume2 className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0" />
-              <span className="truncate text-gray-200">
-                {ELEVENLABS_VOICES.find((v) => v.id === voiceId)?.name || "Jessica (Friendly & Clear)"}
-              </span>
-            </div>
-            <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showVoiceDropdown ? "rotate-180" : ""}`} />
-          </button>
-
-          {showVoiceDropdown && (
-            <div className="absolute left-0 right-0 mt-1.5 bg-[#14100c] border border-[var(--line)] rounded-2xl p-2.5 shadow-2xl z-50 animate-fadeIn backdrop-blur-xl space-y-1.5">
-              <div className="flex items-center justify-between border-b border-white/5 pb-1.5">
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--t-primary)] flex items-center gap-1.5">
-                  <Mic className="w-3 h-3" /> AI Voice Persona
-                </span>
-              </div>
-              <div className="space-y-1">
-                {ELEVENLABS_VOICES.map((v) => {
-                  const isSelected = voiceId === v.id;
-                  return (
-                    <button
-                      key={v.id}
-                      onClick={() => {
-                        if (onSelectVoice) onSelectVoice(v.id);
-                        setShowVoiceDropdown(false);
-                      }}
-                      className={`w-full text-left px-2.5 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${
-                        isSelected
-                          ? "bg-[var(--t-primary)]/25 text-white font-bold border border-[var(--t-primary)]/50 shadow-sm"
-                          : "text-[var(--text-soft)] hover:bg-white/5 hover:text-white"
-                      }`}
-                    >
-                      <div className="min-w-0">
-                        <div className="text-white block truncate leading-tight font-semibold">
-                          {v.name}
-                        </div>
-                        {v.persona && (
-                          <div className="text-[10px] text-gray-400 block truncate">
-                            {v.persona}
-                          </div>
-                        )}
-                      </div>
-                      {isSelected && (
-                        <Check className="w-3.5 h-3.5 text-[var(--t-primary)] shrink-0 stroke-[3]" />
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-              <div className="text-[9px] text-gray-400 border-t border-white/5 pt-1.5 px-1 leading-normal">
-                Caribbean English, Antiguan Creole, Jamaican Patois, Spanish &amp; 24 languages supported with zero robotic distortion.
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Background Animation Motion Preset */}
-        {onChangeAnimMode && (
-          <div className="mb-3 relative">
-            <div className="side-section-label">{t.animModeSelector}</div>
-            <button
-              onClick={() => {
-                if (!loggedInUser) {
-                  if (onOpenLoginModal) onOpenLoginModal();
-                  return;
-                }
-                setShowAnimDropdown((prev) => !prev);
-              }}
-              className="w-full text-left px-3 py-2 rounded-[var(--radius-md)] text-xs font-semibold bg-white/5 border border-[var(--line)] hover:border-[var(--t-primary)]/50 text-white flex items-center justify-between transition-all cursor-pointer shadow-sm hover:shadow-md"
-              title="Select Animation Preset"
-            >
-              <div className="flex items-center gap-2 min-w-0">
-                <Sparkles className={`w-3.5 h-3.5 shrink-0 ${animMode !== "none" ? "text-[var(--t-primary)] animate-pulse" : "text-gray-400"}`} />
-                <span className="truncate text-gray-200">{getAnimLabel(animMode)}</span>
-              </div>
-              <ChevronDown className={`w-3.5 h-3.5 text-gray-400 transition-transform ${showAnimDropdown ? "rotate-180" : ""}`} />
-            </button>
-
-            {showAnimDropdown && (
-              <div className="absolute left-0 right-0 mt-1.5 bg-[#14100c] border border-[var(--line)] rounded-2xl p-2 shadow-2xl z-50 animate-fadeIn backdrop-blur-xl space-y-0.5">
-                <div className="text-[10px] font-extrabold uppercase tracking-widest text-[var(--t-primary)] px-2.5 py-1 flex items-center gap-1.5 border-b border-white/5 mb-1">
-                  <Layers className="w-3 h-3" /> Motion Preset
-                </div>
-                {(
-                  [
-                    "aurora",
-                    "particles",
-                    "wave",
-                    "nebula",
-                    "matrix",
-                    "grid",
-                    "none",
-                  ] as BackgroundAnimMode[]
-                ).map((m) => {
-                  const isSelected = animMode === m;
-                  return (
-                    <button
-                      key={m}
-                      onClick={() => {
-                        onChangeAnimMode(m);
-                        setShowAnimDropdown(false);
-                      }}
-                      className={`w-full text-left px-3 py-1.5 rounded-xl text-xs font-medium transition-all flex items-center justify-between cursor-pointer ${
-                        isSelected
-                          ? "bg-[var(--t-primary)]/20 text-white font-bold border border-[var(--t-primary)]/40 shadow-sm"
-                          : "text-[var(--text-soft)] hover:bg-white/5 hover:text-white"
-                      }`}
-                    >
-                      <span>{getAnimLabel(m)}</span>
-                      {m === "none" && (
-                        <span className="text-[10px] text-amber-400 font-bold px-1.5 py-0.2 rounded bg-amber-400/10">
-                          Off
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-        )}
-
-        {/* Background Theme Selector */}
-        <div className="side-section-label">{t.themeSelector}</div>
-        <div className="grid grid-cols-2 gap-1.5 mb-4">
-          {(Object.keys(THEMES) as ThemeName[]).map((themeName) => {
-            const isSelected = currentTheme === themeName;
-            const themeConfig = THEMES[themeName];
-            return (
-              <button
-                key={themeName}
-                onClick={() => onSelectTheme(themeName)}
-                className={`text-[11px] font-semibold py-1.5 px-2 rounded-[var(--radius-pill)] border transition-all flex items-center justify-center gap-1.5 cursor-pointer ${
-                  isSelected
-                    ? "border-[var(--t-primary)] bg-gradient-to-r from-[var(--t-glow)] to-transparent text-white shadow-sm font-bold"
-                    : "border-[var(--line)] bg-white/5 text-[var(--text-soft)] hover:border-[var(--t-primary)] hover:text-white"
-                }`}
-              >
-                <span
-                  className="w-2.5 h-2.5 rounded-full shrink-0 border border-white/20"
-                  style={{ backgroundColor: themeConfig.primary }}
-                />
-                <span className="truncate">{themeName}</span>
-              </button>
-            );
-          })}
-        </div>
 
         {/* Secure Banking Footer */}
         <div className="mt-auto pt-2">

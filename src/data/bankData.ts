@@ -100,10 +100,6 @@ export const LOCATIONS: Record<string, BranchLocation> = {
 
 export const NAV_ITEMS = [
   { label: "Home", prompt: "" },
-  { label: "Accounts", prompt: "Tell me about account types" },
-  { label: "Transfers", prompt: "How do I transfer money?" },
-  { label: "Investments", prompt: "Tell me about investment and CD options" },
-  { label: "Loans", prompt: "Tell me about loans and loan options" },
   { label: "Security", prompt: "How does CUB keep my account secure?" },
   { label: "Support", prompt: "I need help — what support options are available?" },
 ];

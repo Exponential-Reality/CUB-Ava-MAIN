@@ -1,80 +1,68 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { LogoSvg } from "./LogoSvg";
-import { Menu, ShieldCheck, Volume2, VolumeX, User, LogOut } from "lucide-react";
+import { Menu, ShieldCheck, Settings, User, ChevronDown, Palette, Mic, Globe, LogOut, ChevronUp } from "lucide-react";
 import { getTranslation } from "../utils/i18n";
-import { speakText, stopSpeech, isSpeaking as checkIsSpeaking } from "../utils/speech";
+import { SettingsTab } from "./SettingsModal";
 
 interface HeaderProps {
   onOpenMobile: () => void;
+  onToggleDesktopSidebar?: () => void;
+  isDesktopSidebarOpen?: boolean;
   language?: string;
   loggedInUser?: string | null;
-  onOpenLoginModal?: () => void;
-  onLogout?: () => void;
+  onOpenSettings: (tab?: SettingsTab) => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   onOpenMobile,
+  onToggleDesktopSidebar,
+  isDesktopSidebarOpen = true,
   language = "en",
   loggedInUser,
-  onOpenLoginModal,
-  onLogout,
+  onOpenSettings,
 }) => {
-  const [speaking, setSpeaking] = useState<boolean>(false);
   const t = getTranslation(language);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Sync state if audio stopped externally
+  // Close dropdown when clicking outside
   useEffect(() => {
-    const interval = setInterval(() => {
-      setSpeaking(checkIsSpeaking());
-    }, 400);
-    return () => clearInterval(interval);
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
-
-  const handleToggleAvaSpeech = () => {
-    if (speaking) {
-      stopSpeech();
-      setSpeaking(false);
-      return;
-    }
-
-    setSpeaking(true);
-    speakText(
-      t.welcomeMessage,
-      {
-        onStart: () => setSpeaking(true),
-        onEnd: () => setSpeaking(false),
-        onError: () => setSpeaking(false),
-      },
-      language
-    );
-  };
 
   return (
     <div className="main-header flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5">
       <div className="flex items-center gap-3 sm:gap-4">
+        {/* Mobile menu trigger */}
         <button
           onClick={onOpenMobile}
           className="lg:hidden text-[var(--text-soft)] hover:text-white p-2 rounded-xl bg-white/5 border border-[var(--line)] hover:border-[var(--t-primary)]/40 transition-all cursor-pointer"
-          title="Open Menu"
+          title="Open Sidebar"
         >
           <Menu className="w-5 h-5" />
         </button>
 
-        {/* Ava Interactive Avatar Logo Badge */}
-        <button
-          onClick={handleToggleAvaSpeech}
-          className="main-logo-badge logo-flash relative group cursor-pointer focus:outline-none"
-          title={t.listenToAva}
-        >
-          <LogoSvg />
-          {speaking && (
-            <span className="absolute -top-1 -right-1 flex h-3 w-3">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[var(--t-primary)] opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-3 w-3 bg-[var(--t-primary)]"></span>
-            </span>
-          )}
-        </button>
+        {/* Desktop menu trigger (shown when sidebar is closed) */}
+        {!isDesktopSidebarOpen && (
+          <button
+            onClick={onToggleDesktopSidebar}
+            className="hidden lg:block text-[var(--text-soft)] hover:text-white p-2 rounded-xl bg-white/5 border border-[var(--line)] hover:border-[var(--t-primary)]/40 transition-all cursor-pointer"
+            title="Open Sidebar"
+          >
+            <Menu className="w-5 h-5" />
+          </button>
+        )}
 
+        {/* Logo Badge */}
+        <div className="main-logo-badge logo-flash relative group">
+          <LogoSvg />
+        </div>
         <div>
           <h1 className="m-0 font-['Sora'] text-lg sm:text-2xl 3xl:text-3xl font-extrabold leading-tight tracking-tight">
             <span className="text-[var(--brand-teal)]">{t.appName}</span>
@@ -84,57 +72,8 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right Controls: Ava Voice Button, Login / Profile, & Verified Badge */}
+      {/* Right Controls: Menu Dropdown & Official Verified Badge */}
       <div className="flex items-center gap-2 sm:gap-3">
-        {/* Login or User Profile */}
-        {loggedInUser ? (
-          <div className="flex items-center gap-2 bg-[var(--t-primary)]/15 border border-[var(--t-primary)]/40 px-3 py-1.5 rounded-full text-xs font-semibold text-white">
-            <User className="w-3.5 h-3.5 text-[var(--t-primary)]" />
-            <span className="max-w-[120px] truncate">{loggedInUser}</span>
-            {onLogout && (
-              <button
-                onClick={onLogout}
-                className="text-gray-400 hover:text-white ml-1 p-0.5 rounded-full hover:bg-white/10 transition-all cursor-pointer"
-                title="Sign Out"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-              </button>
-            )}
-          </div>
-        ) : (
-          <button
-            onClick={onOpenLoginModal}
-            className="flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-[var(--t-primary)] text-[#0a0806] font-extrabold text-xs hover:opacity-90 transition-all cursor-pointer shadow-md shadow-[var(--t-glow)]"
-            title="Sign In to CUB Portal"
-          >
-            <User className="w-4 h-4" />
-            <span>Sign In</span>
-          </button>
-        )}
-
-        {/* Girl / Ava Talking Voice Button */}
-        <button
-          onClick={handleToggleAvaSpeech}
-          className={`flex items-center gap-2 px-3.5 py-2 rounded-full border text-xs font-bold transition-all cursor-pointer shadow-md ${
-            speaking
-              ? "bg-[var(--t-primary)] text-[#0a0806] border-white/40 shadow-[var(--t-glow)] animate-pulse"
-              : "bg-white/10 hover:bg-white/15 text-[var(--t-primary)] border-[var(--t-primary)]/40 hover:border-[var(--t-primary)]"
-          }`}
-          title={speaking ? t.stop : t.listenToAva}
-        >
-          {speaking ? (
-            <>
-              <VolumeX className="w-4 h-4 animate-bounce" />
-              <span>{t.stop}</span>
-            </>
-          ) : (
-            <>
-              <Volume2 className="w-4 h-4" />
-              <span>{t.listenToAva}</span>
-            </>
-          )}
-        </button>
-
         {/* Verified Badge */}
         <div className="hidden sm:flex items-center gap-1.5 px-3.5 py-2 rounded-full bg-white/5 border border-[var(--line)] text-xs text-[var(--text-soft)] shadow-sm">
           <ShieldCheck className="w-4 h-4 text-emerald-400" />

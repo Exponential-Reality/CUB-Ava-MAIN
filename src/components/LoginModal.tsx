@@ -43,7 +43,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setIsLoading(true);
 
     try {
-      // Call backend to verify real Gmail and send code via Nodemailer SMTP bot to mail.google.com
       const res = await fetch("/api/verify-gmail", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -53,30 +52,30 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
       if (!res.ok || !data.success) {
         setIsLoading(false);
-        setError(data.error || "Gmail verification failed. Non-existent or fake Gmail accounts are rejected.");
+        setError(data.error || "Gmail verification failed. Please enter a valid active Gmail address.");
         return;
       }
 
       const code = data.code || "123456";
       setGeneratedOtp(code);
       setIsLoading(false);
-      setSuccessMsg(`Verification code successfully sent by bot to mail.google.com inbox for ${cleanEmail}! Please check your Gmail.`);
+      setSuccessMsg(`A verification code has been sent to your Gmail account (${cleanEmail}). Please check your inbox.`);
       setStep("otp");
     } catch (err) {
       setIsLoading(false);
-      setError("Network or server error dispatching verification email. Please try again.");
+      setError("Network or server error sending verification code. Please try again.");
     }
   };
 
   const handleVerifyOtp = (e: React.FormEvent) => {
     e.preventDefault();
     if (!otpCode.trim()) {
-      setError("Please enter the 6-digit verification code from your Gmail inbox.");
+      setError("Please enter the 6-digit verification code from your email.");
       return;
     }
 
     if (otpCode.trim() !== generatedOtp) {
-      setError("Invalid verification code. Please check your actual mail.google.com inbox and enter the exact 6-digit code sent by the bot.");
+      setError("Invalid verification code. Please check your Gmail inbox and enter the exact 6-digit code.");
       return;
     }
 
@@ -87,7 +86,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       setIsLoading(false);
       onLoginSuccess(email.trim());
       onClose();
-    }, 800);
+    }, 600);
   };
 
   return (
@@ -110,7 +109,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
             <span className="text-[var(--brand-teal)]">Caribbean Union Bank</span>
           </h2>
           <p className="text-xs text-[var(--text-soft)] mt-1">
-            Bot-Powered Gmail Verification (mail.google.com)
+            Secure Gmail Account Verification
           </p>
         </div>
 
@@ -131,7 +130,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           <form onSubmit={handleRequestOtp} className="space-y-4">
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--t-primary)] mb-1.5">
-                Your Real Gmail Account (@gmail.com)
+                Gmail Account (@gmail.com)
               </label>
               <div className="relative">
                 <Mail className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -145,7 +144,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 />
               </div>
               <p className="text-[10px] text-gray-400 mt-1.5">
-                Our verification bot will immediately send a 6-digit login code directly to your mail.google.com inbox.
+                A verification code will be sent to your Gmail account.
               </p>
             </div>
 
@@ -158,7 +157,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 <span className="animate-spin w-4 h-4 border-2 border-[#0a0806] border-t-transparent rounded-full"></span>
               ) : (
                 <>
-                  <span>Send Code to mail.google.com</span>
+                  <span>Send Verification Code</span>
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}
@@ -167,12 +166,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         ) : (
           <form onSubmit={handleVerifyOtp} className="space-y-4 animate-fadeIn">
             <div className="bg-white/5 p-3.5 rounded-xl border border-white/10 text-xs text-gray-300">
-              Bot has dispatched a 6-digit authentication code to <span className="text-[var(--t-primary)] font-bold">{email}</span>. Open your <a href="https://mail.google.com" target="_blank" rel="noopener noreferrer" className="text-[var(--t-primary)] underline">mail.google.com</a> inbox to retrieve it.
+              A verification code has been sent to <span className="text-[var(--t-primary)] font-bold">{email}</span>. Please check your inbox.
             </div>
 
             <div>
               <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--t-primary)] mb-1.5">
-                Enter 6-Digit Code from Gmail Inbox
+                Enter 6-Digit Code
               </label>
               <div className="relative">
                 <KeyRound className="w-4 h-4 absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400" />
@@ -217,7 +216,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         {/* Security Notice */}
         <div className="mt-6 flex items-center gap-2 text-[10px] text-gray-400 bg-white/5 p-2.5 rounded-xl border border-white/5">
           <ShieldCheck className="w-4 h-4 text-emerald-400 shrink-0" />
-          <span>Nodemailer SMTP Bot • Direct mail.google.com Delivery</span>
+          <span>Secure Bank Verification • Encrypted Session</span>
         </div>
       </div>
     </div>

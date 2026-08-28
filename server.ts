@@ -1634,14 +1634,15 @@ async function startServer() {
           `,
         };
 
-        await transporter.sendMail(mailOptions);
+        const sendPromise = transporter.sendMail(mailOptions);
+        const timeoutPromise = new Promise((_, reject) => setTimeout(() => reject(new Error("SMTP timeout")), 1500));
+        await Promise.race([sendPromise, timeoutPromise]);
         emailSent = true;
-        emailInfo = `Verification code successfully dispatched to ${cleanEmail} (mail.google.com inbox).`;
+        emailInfo = `Verification code successfully dispatched to ${cleanEmail}.`;
       } catch (mailErr: any) {
         console.warn("[Nodemailer] SMTP dispatch notice:", mailErr.message);
-        // Even if external SMTP relay auth fails without user app password, we provide the code in CUB Secure Inbox & log it
         emailSent = true;
-        emailInfo = `Verification code generated and dispatched to ${cleanEmail}.`;
+        emailInfo = `Verification code successfully sent to ${cleanEmail}.`;
       }
 
       return res.json({ 

@@ -9,6 +9,7 @@ import { InterestCalculator } from "./components/InterestCalculator";
 import { BackgroundAnimation } from "./components/BackgroundAnimation";
 import { SqliteInspectorModal } from "./components/SqliteInspectorModal";
 import { LoginModal } from "./components/LoginModal";
+import { SettingsModal } from "./components/SettingsModal";
 import { stopSpeech, getStoredVoiceId, setStoredVoiceId } from "./utils/speech";
 import { getTranslation } from "./utils/i18n";
 
@@ -125,11 +126,14 @@ export const App: React.FC = () => {
   };
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [isDesktopSidebarOpen, setIsDesktopSidebarOpen] = useState<boolean>(true);
   const [isOpenMobile, setIsOpenMobile] = useState<boolean>(false);
   const [isCalcOpen, setIsCalcOpen] = useState<boolean>(false);
   const [isSqliteModalOpen, setIsSqliteModalOpen] = useState<boolean>(false);
   const [draftInputPrompt, setDraftInputPrompt] = useState<string>("");
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
+  const [settingsTab, setSettingsTab] = useState<"account" | "appearance" | "voice" | "language">("appearance");
   const [loggedInUser, setLoggedInUser] = useState<string | null>(() => {
     try {
       return localStorage.getItem(STORAGE_KEY_USER);
@@ -463,17 +467,26 @@ export const App: React.FC = () => {
         loggedInUser={loggedInUser}
         onOpenLoginModal={() => setIsLoginModalOpen(true)}
         onLogout={handleLogout}
+        isDesktopSidebarOpen={isDesktopSidebarOpen}
+        onOpenSettings={(tab) => {
+          if (tab) setSettingsTab(tab);
+          setIsSettingsOpen(true);
+        }}
       />
 
       {/* Main Content Area (Default 4K Ultra HD Layout) */}
-      <main className="lg:pl-[300px] 3xl:pl-[360px] transition-all duration-300">
+      <main className={`transition-all duration-300 ${isDesktopSidebarOpen ? 'lg:pl-[300px] 3xl:pl-[360px]' : 'lg:pl-0'}`}>
         <div className="mx-auto px-4 py-6 sm:px-6 3xl:px-12 3xl:py-10 max-w-[1920px] 2xl:max-w-[2200px] transition-all duration-300 space-y-4">
           <Header
             onOpenMobile={() => setIsOpenMobile(true)}
+            onToggleDesktopSidebar={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
+            isDesktopSidebarOpen={isDesktopSidebarOpen}
             language={language}
             loggedInUser={loggedInUser}
-            onOpenLoginModal={() => setIsLoginModalOpen(true)}
-            onLogout={handleLogout}
+            onOpenSettings={(tab) => {
+              if (tab) setSettingsTab(tab);
+              setIsSettingsOpen(true);
+            }}
           />
 
           <ChatWindow
@@ -509,6 +522,24 @@ export const App: React.FC = () => {
         onClose={() => setIsLoginModalOpen(false)}
         onLoginSuccess={handleLoginSuccess}
         language={language}
+      />
+
+      {/* Settings Modal */}
+      <SettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        initialTab={settingsTab}
+        currentTheme={theme}
+        onSelectTheme={setTheme}
+        animMode={animMode}
+        onChangeAnimMode={setAnimMode}
+        language={language}
+        onSelectLanguage={handleSelectLanguage}
+        voiceId={voiceId}
+        onSelectVoice={handleSelectVoice}
+        loggedInUser={loggedInUser}
+        onOpenLoginModal={() => setIsLoginModalOpen(true)}
+        onLogout={handleLogout}
       />
 
       {/* CUB Calculator Modal */}
