@@ -25,9 +25,6 @@ interface SidebarProps {
   onSelectLanguage?: (code: string) => void;
   voiceId?: string;
   onSelectVoice?: (id: string) => void;
-  loggedInUser?: string | null;
-  onOpenLoginModal?: () => void;
-  onLogout?: () => void;
   isDesktopSidebarOpen?: boolean;
   onOpenSettings?: (tab?: any) => void;
 }
@@ -50,9 +47,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   onSelectLanguage,
   voiceId = "cgSgspJ2msm6clMCkdW9",
   onSelectVoice,
-  loggedInUser,
-  onOpenLoginModal,
-  onLogout,
   isDesktopSidebarOpen = true,
   onOpenSettings,
 }) => {
@@ -101,11 +95,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
   };
 
   const handleNavClick = (label: string, prompt: string) => {
-    if (!loggedInUser) {
-      if (onOpenLoginModal) onOpenLoginModal();
-      onCloseMobile();
-      return;
-    }
     if (label === "Home") {
       onNewChat();
     } else if (prompt) {
@@ -230,16 +219,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
               <div className="pl-4 pr-2 mt-1 space-y-1">
                 <button
                   onClick={() => {
-                    if (onOpenSettings) onOpenSettings("account");
-                    if (isOpenMobile) onCloseMobile();
-                  }}
-                  className="w-full text-left px-3 py-2 rounded-lg text-xs font-medium text-[var(--text-soft)] hover:text-white hover:bg-white/5 flex items-center gap-2 transition-all cursor-pointer"
-                >
-                  <User className="w-3.5 h-3.5 text-[var(--t-primary)]" />
-                  {loggedInUser ? "Account & Sign Out" : "Secure Sign In"}
-                </button>
-                <button
-                  onClick={() => {
                     if (onOpenSettings) onOpenSettings("appearance");
                     if (isOpenMobile) onCloseMobile();
                   }}
@@ -304,11 +283,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   <div
                     key={sess.id}
                     onClick={() => {
-                      if (!loggedInUser) {
-                        if (onOpenLoginModal) onOpenLoginModal();
-                        onCloseMobile();
-                        return;
-                      }
                       if (onSelectSession) onSelectSession(sess.id);
                       onCloseMobile();
                     }}
@@ -359,11 +333,6 @@ export const Sidebar: React.FC<SidebarProps> = ({
           {onOpenCalculator && (
             <button
               onClick={() => {
-                if (!loggedInUser) {
-                  if (onOpenLoginModal) onOpenLoginModal();
-                  onCloseMobile();
-                  return;
-                }
                 onOpenCalculator();
                 onCloseMobile();
               }}

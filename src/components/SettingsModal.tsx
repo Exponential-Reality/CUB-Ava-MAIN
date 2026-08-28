@@ -5,7 +5,7 @@ import { THEMES } from "../data/bankData";
 import { LANGUAGES_LIST } from "../data/languages";
 import { ELEVENLABS_VOICES } from "../utils/speech";
 
-export type SettingsTab = "account" | "appearance" | "voice" | "language";
+export type SettingsTab = "appearance" | "voice" | "language";
 
 interface SettingsModalProps {
   isOpen: boolean;
@@ -19,9 +19,6 @@ interface SettingsModalProps {
   onSelectLanguage: (code: string) => void;
   voiceId: string;
   onSelectVoice: (id: string) => void;
-  loggedInUser?: string | null;
-  onOpenLoginModal?: () => void;
-  onLogout?: () => void;
 }
 
 export const SettingsModal: React.FC<SettingsModalProps> = ({
@@ -36,9 +33,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
   onSelectLanguage,
   voiceId,
   onSelectVoice,
-  loggedInUser,
-  onOpenLoginModal,
-  onLogout,
 }) => {
   const [activeTab, setActiveTab] = useState<SettingsTab>(initialTab);
 
@@ -68,7 +62,7 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           </div>
           <div>
             <h2 className="text-xl font-extrabold font-['Sora'] text-white">Application Settings</h2>
-            <p className="text-xs text-[var(--text-soft)]">Manage account login, themes, voice personas, and language preferences</p>
+            <p className="text-xs text-[var(--text-soft)]">Manage themes, voice personas, and language preferences</p>
           </div>
         </div>
 
@@ -106,17 +100,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
           >
             <Globe className="w-3.5 h-3.5" />
             <span>Language Support</span>
-          </button>
-          <button
-            onClick={() => setActiveTab("account")}
-            className={`px-4 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer flex items-center gap-2 shrink-0 ${
-              activeTab === "account"
-                ? "bg-[var(--t-primary)] text-[#0a0806] shadow-md"
-                : "bg-white/5 text-gray-300 hover:bg-white/10"
-            }`}
-          >
-            <User className="w-3.5 h-3.5" />
-            <span>Account & Sign In</span>
           </button>
         </div>
 
@@ -265,65 +248,6 @@ export const SettingsModal: React.FC<SettingsModalProps> = ({
                     </button>
                   );
                 })}
-              </div>
-            </div>
-          )}
-
-          {activeTab === "account" && (
-            <div className="space-y-6 animate-fadeIn">
-              <div>
-                <label className="block text-xs font-semibold uppercase tracking-wider text-[var(--t-primary)] mb-2">
-                  Account Authentication Status
-                </label>
-                <p className="text-xs text-gray-400 mb-4">
-                  Sign in with your verified Gmail account to unlock full banking services, transfers, loans, and investments.
-                </p>
-
-                {loggedInUser ? (
-                  <div className="bg-white/5 border border-emerald-500/30 p-5 rounded-2xl flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
-                        <User className="w-5 h-5" />
-                      </div>
-                      <div>
-                        <div className="text-xs font-bold text-white">Signed in as</div>
-                        <div className="text-sm font-mono text-[var(--t-primary)]">{loggedInUser}</div>
-                      </div>
-                    </div>
-                    {onLogout && (
-                      <button
-                        onClick={() => {
-                          onLogout();
-                          onClose();
-                        }}
-                        className="px-4 py-2 rounded-xl bg-red-500/20 text-red-300 font-bold text-xs hover:bg-red-500/30 transition-all cursor-pointer flex items-center gap-1.5"
-                      >
-                        <LogOut className="w-4 h-4" />
-                        <span>Sign Out</span>
-                      </button>
-                    )}
-                  </div>
-                ) : (
-                  <div className="bg-white/5 border border-white/10 p-6 rounded-2xl text-center space-y-4">
-                    <div className="w-12 h-12 rounded-2xl bg-[var(--t-primary)]/15 text-[var(--t-primary)] flex items-center justify-center mx-auto">
-                      <KeyRound className="w-6 h-6" />
-                    </div>
-                    <div>
-                      <h3 className="text-sm font-bold text-white">Secure Portal Sign In</h3>
-                      <p className="text-xs text-gray-400 mt-1">Verify your Gmail account to access your CUB Ava session.</p>
-                    </div>
-                    <button
-                      onClick={() => {
-                        onClose();
-                        if (onOpenLoginModal) onOpenLoginModal();
-                      }}
-                      className="px-6 py-3 rounded-xl bg-[var(--t-primary)] text-[#0a0806] font-bold text-xs hover:opacity-90 transition-all cursor-pointer shadow-lg inline-flex items-center gap-2"
-                    >
-                      <User className="w-4 h-4" />
-                      <span>Sign In with Gmail</span>
-                    </button>
-                  </div>
-                )}
               </div>
             </div>
           )}

@@ -8,7 +8,6 @@ import { ChatInput } from "./components/ChatInput";
 import { InterestCalculator } from "./components/InterestCalculator";
 import { BackgroundAnimation } from "./components/BackgroundAnimation";
 import { SqliteInspectorModal } from "./components/SqliteInspectorModal";
-import { LoginModal } from "./components/LoginModal";
 import { SettingsModal } from "./components/SettingsModal";
 import { stopSpeech, getStoredVoiceId, setStoredVoiceId } from "./utils/speech";
 import { getTranslation } from "./utils/i18n";
@@ -18,7 +17,6 @@ const STORAGE_KEY_ACTIVE_ID = "cub_active_session_id_v2";
 const STORAGE_KEY_THEME = "cub_theme_v2";
 const STORAGE_KEY_ANIM_MODE = "cub_anim_mode_v2";
 const STORAGE_KEY_LANG = "cub_language_v2";
-const STORAGE_KEY_USER = "cub_logged_in_user_v2";
 
 const createDefaultSession = (lang = "en"): ChatSession => {
   const t = getTranslation(lang);
@@ -133,28 +131,7 @@ export const App: React.FC = () => {
   const [draftInputPrompt, setDraftInputPrompt] = useState<string>("");
   const [isLoginModalOpen, setIsLoginModalOpen] = useState<boolean>(false);
   const [isSettingsOpen, setIsSettingsOpen] = useState<boolean>(false);
-  const [settingsTab, setSettingsTab] = useState<"account" | "appearance" | "voice" | "language">("appearance");
-  const [loggedInUser, setLoggedInUser] = useState<string | null>(() => {
-    try {
-      return localStorage.getItem(STORAGE_KEY_USER);
-    } catch (e) {
-      return null;
-    }
-  });
-
-  const handleLoginSuccess = (username: string) => {
-    setLoggedInUser(username);
-    try {
-      localStorage.setItem(STORAGE_KEY_USER, username);
-    } catch (e) {}
-  };
-
-  const handleLogout = () => {
-    setLoggedInUser(null);
-    try {
-      localStorage.removeItem(STORAGE_KEY_USER);
-    } catch (e) {}
-  };
+  const [settingsTab, setSettingsTab] = useState<"appearance" | "voice" | "language">("appearance");
 
   // Hidden developer shortcut to inspect SQLite DB (Ctrl+Shift+S or ?sqlite=1) without cluttering the menu
   useEffect(() => {
@@ -464,12 +441,9 @@ export const App: React.FC = () => {
         onSelectLanguage={handleSelectLanguage}
         voiceId={voiceId}
         onSelectVoice={handleSelectVoice}
-        loggedInUser={loggedInUser}
-        onOpenLoginModal={() => setIsLoginModalOpen(true)}
-        onLogout={handleLogout}
         isDesktopSidebarOpen={isDesktopSidebarOpen}
         onOpenSettings={(tab) => {
-          if (tab) setSettingsTab(tab);
+          if (tab) setSettingsTab(tab as any);
           setIsSettingsOpen(true);
         }}
       />
@@ -482,9 +456,8 @@ export const App: React.FC = () => {
             onToggleDesktopSidebar={() => setIsDesktopSidebarOpen(!isDesktopSidebarOpen)}
             isDesktopSidebarOpen={isDesktopSidebarOpen}
             language={language}
-            loggedInUser={loggedInUser}
             onOpenSettings={(tab) => {
-              if (tab) setSettingsTab(tab);
+              if (tab) setSettingsTab(tab as any);
               setIsSettingsOpen(true);
             }}
           />
@@ -510,19 +483,9 @@ export const App: React.FC = () => {
             onClearDraftPrompt={() => setDraftInputPrompt("")}
             onOpenCalculator={() => setIsCalcOpen(true)}
             language={language}
-            loggedInUser={loggedInUser}
-            onOpenLoginModal={() => setIsLoginModalOpen(true)}
           />
         </div>
       </main>
-
-      {/* Login Modal */}
-      <LoginModal
-        isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
-        onLoginSuccess={handleLoginSuccess}
-        language={language}
-      />
 
       {/* Settings Modal */}
       <SettingsModal
@@ -537,9 +500,6 @@ export const App: React.FC = () => {
         onSelectLanguage={handleSelectLanguage}
         voiceId={voiceId}
         onSelectVoice={handleSelectVoice}
-        loggedInUser={loggedInUser}
-        onOpenLoginModal={() => setIsLoginModalOpen(true)}
-        onLogout={handleLogout}
       />
 
       {/* CUB Calculator Modal */}

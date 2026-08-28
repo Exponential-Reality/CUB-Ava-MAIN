@@ -91,7 +91,7 @@ export interface Translations {
 export const TRANSLATIONS: Record<LanguageCode, Translations> = {
   en: {
     appName: "Caribbean Union Bank",
-    appSubtitle: "AI Chatbox",
+    appSubtitle: "AI Assistant",
     officialAssistant: "Official CUB Assistant",
     listenToAva: "Listen to Ava",
     newConversation: "New Conversation",
@@ -163,7 +163,7 @@ export const TRANSLATIONS: Record<LanguageCode, Translations> = {
 
   creole: {
     appName: "Caribbean Union Bank",
-    appSubtitle: "AI Chatbox",
+    appSubtitle: "AI Assistant",
     officialAssistant: "Ofisyal CUB Assistant",
     listenToAva: "Kouté Ava",
     newConversation: "Nouvel Konvesasyon",
@@ -307,7 +307,7 @@ export const TRANSLATIONS: Record<LanguageCode, Translations> = {
 
   fr: {
     appName: "Caribbean Union Bank",
-    appSubtitle: "Chatbot IA",
+    appSubtitle: "Asistente IA",
     officialAssistant: "Assistant Officiel CUB",
     listenToAva: "Écouter Ava",
     newConversation: "Nouvelle Conversation",
@@ -379,7 +379,7 @@ export const TRANSLATIONS: Record<LanguageCode, Translations> = {
 
   ht: {
     appName: "Caribbean Union Bank",
-    appSubtitle: "Chatbot IA",
+    appSubtitle: "Asistente IA",
     officialAssistant: "Asistan Ofisyèl CUB",
     listenToAva: "Koute Ava",
     newConversation: "Nouvo Konvèsasyon",
@@ -1099,7 +1099,7 @@ export const TRANSLATIONS: Record<LanguageCode, Translations> = {
 
   ja: {
     appName: "カリビアン・ユニオン・バンク",
-    appSubtitle: "AIチャットボット",
+    appSubtitle: "AIアシスタント",
     officialAssistant: "公式CUBアシスタント",
     listenToAva: "Avaの音声を聞く",
     newConversation: "新しい会話",
@@ -1171,7 +1171,7 @@ export const TRANSLATIONS: Record<LanguageCode, Translations> = {
 
   ko: {
     appName: "캐리비안 유니온 은행",
-    appSubtitle: "AI 챗봇",
+    appSubtitle: "AI 어시스턴트",
     officialAssistant: "공식 CUB 어시스턴트",
     listenToAva: "Ava 음성 듣기",
     newConversation: "새 대화",
@@ -1459,7 +1459,7 @@ export const TRANSLATIONS: Record<LanguageCode, Translations> = {
 
   jam: {
     appName: "Caribbean Union Bank",
-    appSubtitle: "AI Chatbox",
+    appSubtitle: "AI Assistant",
     officialAssistant: "Ofishal CUB Asistant",
     listenToAva: "Lisn to Ava",
     newConversation: "Nu Chat",

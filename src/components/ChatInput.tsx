@@ -11,8 +11,6 @@ interface ChatInputProps {
   onClearDraftPrompt?: () => void;
   onOpenCalculator?: () => void;
   language?: string;
-  loggedInUser?: string | null;
-  onOpenLoginModal?: () => void;
 }
 
 export const ChatInput: React.FC<ChatInputProps> = ({
@@ -23,8 +21,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
   onClearDraftPrompt,
   onOpenCalculator,
   language = "en",
-  loggedInUser,
-  onOpenLoginModal,
 }) => {
   const [input, setInput] = useState("");
   const [isSpeaking, setIsSpeaking] = useState(false);
@@ -197,28 +193,6 @@ export const ChatInput: React.FC<ChatInputProps> = ({
 
   return (
     <div className="space-y-3 mt-3 relative">
-      {!loggedInUser && (
-        <div className="absolute inset-0 z-20 backdrop-blur-md bg-black/80 rounded-3xl border border-[var(--t-primary)]/40 flex flex-col items-center justify-center p-6 text-center animate-fadeIn shadow-2xl">
-          <div className="w-12 h-12 rounded-2xl bg-[var(--t-primary)]/20 border border-[var(--t-primary)]/50 flex items-center justify-center mb-3 text-[var(--t-primary)] shadow-[var(--t-glow)]">
-            <Lock className="w-5 h-5" />
-          </div>
-          <h3 className="text-base font-extrabold font-['Sora'] text-white mb-1">
-            Secure Banking Login Required
-          </h3>
-          <p className="text-xs text-gray-300 max-w-sm mb-4">
-            Please sign in to your CUB secure account to chat with Ava, check account details, or use banking assistants.
-          </p>
-          <div className="flex flex-wrap items-center justify-center gap-2.5">
-            <button
-              onClick={onOpenLoginModal}
-              className="px-5 py-2.5 rounded-xl bg-[var(--t-primary)] text-[#0a0806] font-extrabold text-xs hover:opacity-95 transition-all cursor-pointer shadow-lg shadow-[var(--t-glow)] flex items-center gap-2"
-            >
-              <User className="w-4 h-4" /> Sign In / Demo Login
-            </button>
-          </div>
-        </div>
-      )}
-
       {/* Input Form Bar */}
       <form
         onSubmit={handleSubmit}

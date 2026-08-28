@@ -9,7 +9,6 @@ interface HeaderProps {
   onToggleDesktopSidebar?: () => void;
   isDesktopSidebarOpen?: boolean;
   language?: string;
-  loggedInUser?: string | null;
   onOpenSettings: (tab?: SettingsTab) => void;
 }
 
@@ -18,7 +17,6 @@ export const Header: React.FC<HeaderProps> = ({
   onToggleDesktopSidebar,
   isDesktopSidebarOpen = true,
   language = "en",
-  loggedInUser,
   onOpenSettings,
 }) => {
   const t = getTranslation(language);
